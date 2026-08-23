@@ -12,4 +12,4 @@ test-web:
 	@test ! -f web/package.json || (cd web && npm test -- --run && npm run build)
 
 secrets-check:
-	@! git grep -nE '(PRIVATE_KEY=0x|o1_launch_[a-f0-9]{8}_)' -- . ':!docs/superpowers/plans'
+	@! git grep -nE '(PRIVATE_KEY=0x|o1_launch_[a-f0-9]{8}_)' -- . ':!Makefile' ':!docs/superpowers/plans'

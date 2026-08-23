@@ -167,7 +167,7 @@ git grep -nE '(PRIVATE_KEY=0x|o1_launch_[a-f0-9]{8}_)' -- . ':!docs/superpowers/
 - setActive(bytes32,bool)
 - 事件 LaunchpadCreated(bytes32 indexed id,address indexed owner,address indexed treasury,string slug)
 
-- [ ] **步骤 1：先写失败测试**
+- [x] **步骤 1：先写失败测试**
 
 ~~~solidity
 function testCreateStoresOwnerTreasuryAndActive() public {
@@ -188,19 +188,19 @@ function testOnlyOwnerMutates() public {
 }
 ~~~
 
-- [ ] **步骤 2：确认测试失败**
+- [x] **步骤 2：确认测试失败**
 
 执行：cd contracts && forge test --match-path test/LaunchpadRegistry.t.sol -vv
 
 预期：LaunchpadRegistry 尚不存在导致编译失败。
 
-- [ ] **步骤 3：实现最小 Registry**
+- [x] **步骤 3：实现最小 Registry**
 
 ID 使用 keccak256(abi.encode(block.chainid, normalizedSlug))。slug 仅允许 3–32 位小写 ASCII 字母、数字和内部单个连字符；拒绝首尾连字符、连续连字符、重复 ID 和零 Treasury。使用 custom error。
 
-- [ ] **步骤 4：补充重复 ID、非法 slug、零 Treasury、事件和 Owner 修改测试**
+- [x] **步骤 4：补充重复 ID、非法 slug、零 Treasury、事件和 Owner 修改测试**
 
-- [ ] **步骤 5：运行并提交**
+- [x] **步骤 5：运行并提交**
 
 执行：cd contracts && forge test --match-path test/LaunchpadRegistry.t.sol -vv
 
