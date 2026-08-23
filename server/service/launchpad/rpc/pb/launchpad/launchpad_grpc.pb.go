@@ -32,6 +32,7 @@ const (
 	Launchpad_QuoteSwap_FullMethodName           = "/launchpad.Launchpad/QuoteSwap"
 	Launchpad_PrepareSwap_FullMethodName         = "/launchpad.Launchpad/PrepareSwap"
 	Launchpad_PrepareFeeClaim_FullMethodName     = "/launchpad.Launchpad/PrepareFeeClaim"
+	Launchpad_GetFees_FullMethodName             = "/launchpad.Launchpad/GetFees"
 	Launchpad_CreateAuthChallenge_FullMethodName = "/launchpad.Launchpad/CreateAuthChallenge"
 	Launchpad_VerifyAuthSignature_FullMethodName = "/launchpad.Launchpad/VerifyAuthSignature"
 )
@@ -53,6 +54,7 @@ type LaunchpadClient interface {
 	QuoteSwap(ctx context.Context, in *QuoteSwapRequest, opts ...grpc.CallOption) (*QuoteSwapResponse, error)
 	PrepareSwap(ctx context.Context, in *PrepareSwapRequest, opts ...grpc.CallOption) (*PreparedTransaction, error)
 	PrepareFeeClaim(ctx context.Context, in *PrepareFeeClaimRequest, opts ...grpc.CallOption) (*PreparedTransaction, error)
+	GetFees(ctx context.Context, in *GetFeesRequest, opts ...grpc.CallOption) (*GetFeesResponse, error)
 	CreateAuthChallenge(ctx context.Context, in *CreateAuthChallengeRequest, opts ...grpc.CallOption) (*CreateAuthChallengeResponse, error)
 	VerifyAuthSignature(ctx context.Context, in *VerifyAuthSignatureRequest, opts ...grpc.CallOption) (*VerifyAuthSignatureResponse, error)
 }
@@ -195,6 +197,16 @@ func (c *launchpadClient) PrepareFeeClaim(ctx context.Context, in *PrepareFeeCla
 	return out, nil
 }
 
+func (c *launchpadClient) GetFees(ctx context.Context, in *GetFeesRequest, opts ...grpc.CallOption) (*GetFeesResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetFeesResponse)
+	err := c.cc.Invoke(ctx, Launchpad_GetFees_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *launchpadClient) CreateAuthChallenge(ctx context.Context, in *CreateAuthChallengeRequest, opts ...grpc.CallOption) (*CreateAuthChallengeResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(CreateAuthChallengeResponse)
@@ -232,6 +244,7 @@ type LaunchpadServer interface {
 	QuoteSwap(context.Context, *QuoteSwapRequest) (*QuoteSwapResponse, error)
 	PrepareSwap(context.Context, *PrepareSwapRequest) (*PreparedTransaction, error)
 	PrepareFeeClaim(context.Context, *PrepareFeeClaimRequest) (*PreparedTransaction, error)
+	GetFees(context.Context, *GetFeesRequest) (*GetFeesResponse, error)
 	CreateAuthChallenge(context.Context, *CreateAuthChallengeRequest) (*CreateAuthChallengeResponse, error)
 	VerifyAuthSignature(context.Context, *VerifyAuthSignatureRequest) (*VerifyAuthSignatureResponse, error)
 	mustEmbedUnimplementedLaunchpadServer()
@@ -282,6 +295,9 @@ func (UnimplementedLaunchpadServer) PrepareSwap(context.Context, *PrepareSwapReq
 }
 func (UnimplementedLaunchpadServer) PrepareFeeClaim(context.Context, *PrepareFeeClaimRequest) (*PreparedTransaction, error) {
 	return nil, status.Error(codes.Unimplemented, "method PrepareFeeClaim not implemented")
+}
+func (UnimplementedLaunchpadServer) GetFees(context.Context, *GetFeesRequest) (*GetFeesResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetFees not implemented")
 }
 func (UnimplementedLaunchpadServer) CreateAuthChallenge(context.Context, *CreateAuthChallengeRequest) (*CreateAuthChallengeResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method CreateAuthChallenge not implemented")
@@ -544,6 +560,24 @@ func _Launchpad_PrepareFeeClaim_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Launchpad_GetFees_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetFeesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LaunchpadServer).GetFees(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Launchpad_GetFees_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LaunchpadServer).GetFees(ctx, req.(*GetFeesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Launchpad_CreateAuthChallenge_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(CreateAuthChallengeRequest)
 	if err := dec(in); err != nil {
@@ -638,6 +672,10 @@ var Launchpad_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "PrepareFeeClaim",
 			Handler:    _Launchpad_PrepareFeeClaim_Handler,
+		},
+		{
+			MethodName: "GetFees",
+			Handler:    _Launchpad_GetFees_Handler,
 		},
 		{
 			MethodName: "CreateAuthChallenge",

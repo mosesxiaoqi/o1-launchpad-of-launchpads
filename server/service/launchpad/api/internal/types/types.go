@@ -34,6 +34,19 @@ type CreateLaunchpadRequest struct {
 	RegistryTxHash string `json:"registry_tx_hash"`
 }
 
+type GetFeesRequest struct {
+	Recipient string `path:"recipient"`
+	Currency  string `form:"currency"`
+}
+
+type GetFeesResponse struct {
+	ChainId     int64  `json:"chain_id"`
+	Currency    string `json:"currency"`
+	Recipient   string `json:"recipient"`
+	Amount      string `json:"amount"`
+	BlockNumber uint64 `json:"block_number"`
+}
+
 type HealthResponse struct {
 	Status string `json:"status"`
 }

@@ -5,7 +5,10 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"time"
+
+	"o1-launchpad/common/pagination"
 
 	"github.com/lib/pq"
 )
@@ -28,6 +31,7 @@ type LaunchEvent struct {
 }
 
 type TokenLaunch struct {
+	ID int64
 	LaunchEvent
 	LaunchpadSlug string
 }
@@ -35,13 +39,13 @@ type TokenLaunch struct {
 func (m *Model) GetToken(ctx context.Context, chainID int64, token []byte) (TokenLaunch, error) {
 	var item TokenLaunch
 	err := m.db.QueryRowContext(ctx, `
-		SELECT t.chain_id, p.launchpad_id, t.token, t.pool_id, t.creator, t.quote, t.factory,
+		SELECT t.id, t.chain_id, p.launchpad_id, t.token, t.pool_id, t.creator, t.quote, t.factory,
 		       t.supply::text, t.tx_hash, t.block_number, t.block_hash, t.log_index, t.status,
 		       t.created_at, p.slug
 		FROM token_launches t JOIN launchpads p ON p.id=t.launchpad_pk
 		WHERE t.chain_id=$1 AND t.token=$2`, chainID, token,
 	).Scan(
-		&item.ChainID, &item.LaunchpadID, &item.Token, &item.PoolID, &item.Creator, &item.Quote,
+		&item.ID, &item.ChainID, &item.LaunchpadID, &item.Token, &item.PoolID, &item.Creator, &item.Quote,
 		&item.Factory, &item.Supply, &item.TxHash, &item.BlockNumber, &item.BlockHash,
 		&item.LogIndex, &item.Status, &item.CreatedAt, &item.LaunchpadSlug,
 	)
@@ -49,12 +53,24 @@ func (m *Model) GetToken(ctx context.Context, chainID int64, token []byte) (Toke
 }
 
 func (m *Model) ListTokens(ctx context.Context, chainID int64, limit int) ([]TokenLaunch, error) {
-	rows, err := m.db.QueryContext(ctx, `
-		SELECT t.chain_id, p.launchpad_id, t.token, t.pool_id, t.creator, t.quote, t.factory,
+	return m.ListTokensPage(ctx, chainID, limit, nil)
+}
+
+func (m *Model) ListTokensPage(ctx context.Context, chainID int64, limit int, cursor *pagination.Cursor) ([]TokenLaunch, error) {
+	query := `
+		SELECT t.id, t.chain_id, p.launchpad_id, t.token, t.pool_id, t.creator, t.quote, t.factory,
 		       t.supply::text, t.tx_hash, t.block_number, t.block_hash, t.log_index, t.status,
 		       t.created_at, p.slug
 		FROM token_launches t JOIN launchpads p ON p.id=t.launchpad_pk
-		WHERE t.chain_id=$1 ORDER BY t.created_at DESC, t.id DESC LIMIT $2`, chainID, limit)
+		WHERE t.chain_id=$1`
+	args := []any{chainID}
+	if cursor != nil {
+		query += ` AND (t.created_at, t.id) < ($2, $3)`
+		args = append(args, cursor.CreatedAt, cursor.ID)
+	}
+	args = append(args, limit)
+	query += fmt.Sprintf(` ORDER BY t.created_at DESC, t.id DESC LIMIT $%d`, len(args))
+	rows, err := m.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +79,7 @@ func (m *Model) ListTokens(ctx context.Context, chainID int64, limit int) ([]Tok
 	for rows.Next() {
 		var item TokenLaunch
 		if err := rows.Scan(
-			&item.ChainID, &item.LaunchpadID, &item.Token, &item.PoolID, &item.Creator, &item.Quote,
+			&item.ID, &item.ChainID, &item.LaunchpadID, &item.Token, &item.PoolID, &item.Creator, &item.Quote,
 			&item.Factory, &item.Supply, &item.TxHash, &item.BlockNumber, &item.BlockHash,
 			&item.LogIndex, &item.Status, &item.CreatedAt, &item.LaunchpadSlug,
 		); err != nil {
@@ -118,13 +134,24 @@ func (m *Model) ApplyLaunchEvent(ctx context.Context, event LaunchEvent, checkpo
 }
 
 func (m *Model) ListLaunchpadTokens(ctx context.Context, chainID int64, slug string, limit int) ([]TokenLaunch, error) {
-	rows, err := m.db.QueryContext(ctx, `
-		SELECT t.chain_id, p.launchpad_id, t.token, t.pool_id, t.creator, t.quote, t.factory,
+	return m.ListLaunchpadTokensPage(ctx, chainID, slug, limit, nil)
+}
+
+func (m *Model) ListLaunchpadTokensPage(ctx context.Context, chainID int64, slug string, limit int, cursor *pagination.Cursor) ([]TokenLaunch, error) {
+	query := `
+		SELECT t.id, t.chain_id, p.launchpad_id, t.token, t.pool_id, t.creator, t.quote, t.factory,
 		       t.supply::text, t.tx_hash, t.block_number, t.block_hash, t.log_index, t.status,
 		       t.created_at, p.slug
 		FROM token_launches t JOIN launchpads p ON p.id=t.launchpad_pk
-		WHERE t.chain_id=$1 AND p.slug=$2
-		ORDER BY t.block_number DESC, t.log_index DESC LIMIT $3`, chainID, slug, limit)
+		WHERE t.chain_id=$1 AND p.slug=$2`
+	args := []any{chainID, slug}
+	if cursor != nil {
+		query += ` AND (t.created_at, t.id) < ($3, $4)`
+		args = append(args, cursor.CreatedAt, cursor.ID)
+	}
+	args = append(args, limit)
+	query += fmt.Sprintf(` ORDER BY t.created_at DESC, t.id DESC LIMIT $%d`, len(args))
+	rows, err := m.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -133,7 +160,7 @@ func (m *Model) ListLaunchpadTokens(ctx context.Context, chainID int64, slug str
 	for rows.Next() {
 		var item TokenLaunch
 		if err := rows.Scan(
-			&item.ChainID, &item.LaunchpadID, &item.Token, &item.PoolID, &item.Creator, &item.Quote,
+			&item.ID, &item.ChainID, &item.LaunchpadID, &item.Token, &item.PoolID, &item.Creator, &item.Quote,
 			&item.Factory, &item.Supply, &item.TxHash, &item.BlockNumber, &item.BlockHash,
 			&item.LogIndex, &item.Status, &item.CreatedAt, &item.LaunchpadSlug,
 		); err != nil {

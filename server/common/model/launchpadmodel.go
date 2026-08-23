@@ -3,7 +3,10 @@ package model
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"time"
+
+	"o1-launchpad/common/pagination"
 )
 
 type Launchpad struct {
@@ -52,10 +55,22 @@ func (m *Model) GetLaunchpadBySlug(ctx context.Context, chainID int64, slug stri
 }
 
 func (m *Model) ListLaunchpads(ctx context.Context, limit int) ([]Launchpad, error) {
-	rows, err := m.db.QueryContext(ctx, `
+	return m.ListLaunchpadsPage(ctx, limit, nil)
+}
+
+func (m *Model) ListLaunchpadsPage(ctx context.Context, limit int, cursor *pagination.Cursor) ([]Launchpad, error) {
+	query := `
 		SELECT id, chain_id, launchpad_id, slug, name, description, logo_url, primary_color,
 		       owner, treasury, registry_tx_hash, registry_block_number, active, created_at
-		FROM launchpads ORDER BY created_at DESC, id DESC LIMIT $1`, limit)
+		FROM launchpads`
+	args := []any{}
+	if cursor != nil {
+		query += ` WHERE (created_at, id) < ($1, $2)`
+		args = append(args, cursor.CreatedAt, cursor.ID)
+	}
+	args = append(args, limit)
+	query += fmt.Sprintf(` ORDER BY created_at DESC, id DESC LIMIT $%d`, len(args))
+	rows, err := m.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}

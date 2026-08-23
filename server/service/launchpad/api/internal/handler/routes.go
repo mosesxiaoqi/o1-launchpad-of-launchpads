@@ -41,6 +41,11 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 				Path:    "/claims/fees/prepare",
 				Handler: fee.PrepareFeeClaimHandler(serverCtx),
 			},
+			{
+				Method:  http.MethodGet,
+				Path:    "/fees/:recipient",
+				Handler: fee.GetFeesHandler(serverCtx),
+			},
 		},
 		rest.WithPrefix("/v1"),
 	)
@@ -66,7 +71,7 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 			{
 				Method:  http.MethodPost,
 				Path:    "/launchpads",
-				Handler: serverCtx.Session(launchpad.CreateLaunchpadHandler(serverCtx)),
+				Handler: launchpad.CreateLaunchpadHandler(serverCtx),
 			},
 			{
 				Method:  http.MethodGet,
@@ -112,6 +117,21 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 			},
 		},
 		rest.WithPrefix("/v1"),
+	)
+
+	server.AddRoutes(
+		[]rest.Route{
+			{
+				Method:  http.MethodGet,
+				Path:    "/health/live",
+				Handler: system.LiveHandler(serverCtx),
+			},
+			{
+				Method:  http.MethodGet,
+				Path:    "/health/ready",
+				Handler: system.ReadyHandler(serverCtx),
+			},
+		},
 	)
 
 	server.AddRoutes(

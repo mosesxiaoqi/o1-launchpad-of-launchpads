@@ -155,6 +155,19 @@ type PrepareFeeClaimRequest {
 	Wallet    string `json:"wallet"`
 }
 
+type GetFeesRequest {
+	Recipient string `path:"recipient"`
+	Currency  string `form:"currency"`
+}
+
+type GetFeesResponse {
+	ChainId     int64  `json:"chain_id"`
+	Currency    string `json:"currency"`
+	Recipient   string `json:"recipient"`
+	Amount      string `json:"amount"`
+	BlockNumber uint64 `json:"block_number"`
+}
+
 type CreateAuthChallengeRequest {
 	ChainId int64  `json:"chain_id"`
 	Address string `json:"address"`
@@ -189,6 +202,17 @@ service launchpad-api {
 
 	@handler getConfig
 	get /config returns (ConfigResponse)
+}
+
+@server (
+	group: system
+)
+service launchpad-api {
+	@handler live
+	get /health/live returns (HealthResponse)
+
+	@handler ready
+	get /health/ready returns (HealthResponse)
 }
 
 @server (
@@ -256,6 +280,9 @@ service launchpad-api {
 	group:  fee
 )
 service launchpad-api {
+	@handler getFees
+	get /fees/:recipient (GetFeesRequest) returns (GetFeesResponse)
+
 	@handler prepareFeeClaim
 	post /claims/fees/prepare (PrepareFeeClaimRequest) returns (PreparedTransaction)
 }

@@ -649,11 +649,11 @@ cd ../server && go generate ./common/chain
 
 索引到 latest-2，单批最多 500 个区块。Hash 不匹配时最多回退 64 个区块；找不到共同祖先则停止并报错。
 
-- [ ] **步骤 5：在 RPC Logic 实现查询与交易准备**
+- [x] **步骤 5：在 RPC Logic 实现查询与交易准备**
 
 Cursor 使用 created_at+id，默认 25、最大 100；大整数使用十进制字符串；Fee 在同一个 RPC Block 直接读取 Escrow。PrepareLaunch、PrepareSwap 和 PrepareFeeClaim 只返回 chainId、from、to、data、value、deadline 和 review，不签名、不广播。
 
-- [ ] **步骤 6：实现 Gateway 路由转换**
+- [x] **步骤 6：实现 Gateway 路由转换**
 
 Gateway 将 RPC 错误映射为 problem JSON，并保持 o1 兼容的 HTTP 路径和字段命名。Gateway 不读取 PostgreSQL、Base RPC 或部署清单。
 
@@ -661,7 +661,7 @@ Gateway 将 RPC 错误映射为 problem JSON，并保持 o1 兼容的 HTTP 路�
 
 Indexer 启动时使用 conf.MustLoad(*configFile,&c,conf.UseEnv())，调用 c.MustSetUp()，从 ServiceContext 获取 Model/RPC/Deployment，不直接读取环境变量或硬编码地址。
 
-- [ ] **步骤 8：运行并提交**
+- [x] **步骤 8：运行并提交**
 
 执行：cd server && go test ./... -count=1
 

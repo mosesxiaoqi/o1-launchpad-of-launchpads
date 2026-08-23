@@ -87,6 +87,11 @@ func (s *LaunchpadServer) PrepareFeeClaim(ctx context.Context, in *launchpad.Pre
 	return l.PrepareFeeClaim(in)
 }
 
+func (s *LaunchpadServer) GetFees(ctx context.Context, in *launchpad.GetFeesRequest) (*launchpad.GetFeesResponse, error) {
+	l := logic.NewGetFeesLogic(ctx, s.svcCtx)
+	return l.GetFees(in)
+}
+
 func (s *LaunchpadServer) CreateAuthChallenge(ctx context.Context, in *launchpad.CreateAuthChallengeRequest) (*launchpad.CreateAuthChallengeResponse, error) {
 	l := logic.NewCreateAuthChallengeLogic(ctx, s.svcCtx)
 	return l.CreateAuthChallenge(in)

@@ -18,6 +18,8 @@ type (
 	CreateLaunchpadRequest      = launchpad.CreateLaunchpadRequest
 	Empty                       = launchpad.Empty
 	GetConfigResponse           = launchpad.GetConfigResponse
+	GetFeesRequest              = launchpad.GetFeesRequest
+	GetFeesResponse             = launchpad.GetFeesResponse
 	GetLaunchpadRequest         = launchpad.GetLaunchpadRequest
 	GetTokenRequest             = launchpad.GetTokenRequest
 	GetTransactionRequest       = launchpad.GetTransactionRequest
@@ -53,6 +55,7 @@ type (
 		QuoteSwap(ctx context.Context, in *QuoteSwapRequest, opts ...grpc.CallOption) (*QuoteSwapResponse, error)
 		PrepareSwap(ctx context.Context, in *PrepareSwapRequest, opts ...grpc.CallOption) (*PreparedTransaction, error)
 		PrepareFeeClaim(ctx context.Context, in *PrepareFeeClaimRequest, opts ...grpc.CallOption) (*PreparedTransaction, error)
+		GetFees(ctx context.Context, in *GetFeesRequest, opts ...grpc.CallOption) (*GetFeesResponse, error)
 		CreateAuthChallenge(ctx context.Context, in *CreateAuthChallengeRequest, opts ...grpc.CallOption) (*CreateAuthChallengeResponse, error)
 		VerifyAuthSignature(ctx context.Context, in *VerifyAuthSignatureRequest, opts ...grpc.CallOption) (*VerifyAuthSignatureResponse, error)
 	}
@@ -131,6 +134,11 @@ func (m *defaultLaunchpad) PrepareSwap(ctx context.Context, in *PrepareSwapReque
 func (m *defaultLaunchpad) PrepareFeeClaim(ctx context.Context, in *PrepareFeeClaimRequest, opts ...grpc.CallOption) (*PreparedTransaction, error) {
 	client := launchpad.NewLaunchpadClient(m.cli.Conn())
 	return client.PrepareFeeClaim(ctx, in, opts...)
+}
+
+func (m *defaultLaunchpad) GetFees(ctx context.Context, in *GetFeesRequest, opts ...grpc.CallOption) (*GetFeesResponse, error) {
+	client := launchpad.NewLaunchpadClient(m.cli.Conn())
+	return client.GetFees(ctx, in, opts...)
 }
 
 func (m *defaultLaunchpad) CreateAuthChallenge(ctx context.Context, in *CreateAuthChallengeRequest, opts ...grpc.CallOption) (*CreateAuthChallengeResponse, error) {

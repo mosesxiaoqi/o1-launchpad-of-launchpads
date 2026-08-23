@@ -3,10 +3,13 @@ package logic
 import (
 	"context"
 
+	"o1-launchpad/common/pagination"
 	"o1-launchpad/service/launchpad/rpc/internal/svc"
 	"o1-launchpad/service/launchpad/rpc/pb/launchpad"
 
 	"github.com/zeromicro/go-zero/core/logx"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type ListLaunchpadsLogic struct {
@@ -24,15 +27,21 @@ func NewListLaunchpadsLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Li
 }
 
 func (l *ListLaunchpadsLogic) ListLaunchpads(in *launchpad.PageRequest) (*launchpad.ListLaunchpadsResponse, error) {
-	limit := int(in.Limit)
-	if limit <= 0 || limit > 100 {
-		limit = 20
+	limit := pagination.Limit(in.Limit)
+	cursor, err := pagination.DecodeOptional(in.Cursor)
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
-	items, err := l.svcCtx.Model.ListLaunchpads(l.ctx, limit)
+	items, err := l.svcCtx.Model.ListLaunchpadsPage(l.ctx, limit+1, cursor)
 	if err != nil {
 		return nil, err
 	}
 	response := &launchpad.ListLaunchpadsResponse{Launchpads: make([]*launchpad.LaunchpadInfo, 0, len(items))}
+	if len(items) > limit {
+		last := items[limit-1]
+		response.NextCursor = pagination.Encode(pagination.Cursor{CreatedAt: last.CreatedAt, ID: last.ID})
+		items = items[:limit]
+	}
 	for _, item := range items {
 		response.Launchpads = append(response.Launchpads, launchpadInfo(item))
 	}
