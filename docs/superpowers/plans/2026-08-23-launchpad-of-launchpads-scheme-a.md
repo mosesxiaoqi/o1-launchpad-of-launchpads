@@ -281,27 +281,27 @@ forge test --match-path test/FeeEscrow.t.sol -vv
 - currentTotalFeeBps(poolId,timestamp) 返回 150–9900。
 - 内部拆分结果包含 creator、protocol、referrer、laas、surcharge，合计必须等于实际收费。
 
-- [ ] **步骤 1：写精确金额失败测试**
+- [x] **步骤 1：写精确金额失败测试**
 
 1,000 单位配对资产、有 Referrer 时应为 Creator 5、Platform 3、Referrer 2、LaaS 5；无 Referrer 时为 Creator 5、Platform 5、Referrer 0、LaaS 5。
 
-- [ ] **步骤 2：写 anti-snipe 失败测试**
+- [x] **步骤 2：写 anti-snipe 失败测试**
 
 launchTime 时为 9900 bps，中间单调不增，launchTime+16 及之后精确等于 150 bps。
 
-- [ ] **步骤 3：确认失败**
+- [x] **步骤 3：确认失败**
 
 执行：cd contracts && forge test --match-path test/LaunchHookV2Fees.t.sol -vv
 
-- [ ] **步骤 4：移植 o1 Hook，仅修改费用记账**
+- [x] **步骤 4：移植 o1 Hook 费用计算，PoolManager callback 在任务 5 集成**
 
-保留 PoolManager callback、配对资产收费、Referrer 校验和 Trade 事件；拆分 protocol 与 LaaS；整数余数和开盘 surcharge 进入 Platform。
+本任务冻结费用计算、Referrer 校验与 protocol/LaaS 拆分；任务 5 集成 PoolManager callback、配对资产收费和 Trade 事件。整数余数和开盘 surcharge 进入 Platform。
 
-- [ ] **步骤 5：增加 Fuzz 不变量**
+- [x] **步骤 5：增加 Fuzz 不变量**
 
 对 uint128 金额、时间戳和 Referrer 状态验证：credit 合计等于收费、LaaS 不进入 Creator/Referrer、费率始终在 150–9900。
 
-- [ ] **步骤 6：运行并提交**
+- [x] **步骤 6：运行并提交**
 
 执行：cd contracts && forge test --match-path test/LaunchHookV2Fees.t.sol --fuzz-runs 1000
 

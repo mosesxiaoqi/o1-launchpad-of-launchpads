@@ -13,3 +13,9 @@ server/bin/
 web/playwright-report/
 web/test-results/
 contracts/broadcast/
+
+# Only the vendored OpenZeppelin Solidity sources and license are tracked.
+contracts/lib/openzeppelin-contracts/*
+!contracts/lib/openzeppelin-contracts/contracts/
+!contracts/lib/openzeppelin-contracts/contracts/**
+!contracts/lib/openzeppelin-contracts/LICENSE
