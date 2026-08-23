@@ -10,4 +10,6 @@ coverage/
 contracts/cache/
 contracts/out/
 server/bin/
-
+web/playwright-report/
+web/test-results/
+contracts/broadcast/

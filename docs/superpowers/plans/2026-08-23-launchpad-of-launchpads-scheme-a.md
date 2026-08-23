@@ -97,13 +97,13 @@ docs/demo/base-sepolia-runbook.md
 - 生成所有层共用的测试网部署清单。
 - 固化 Factory、Hook 和 Escrow 的浏览器验证源码及来源信息。
 
-- [ ] **步骤 1：初始化 Git 并忽略敏感/生成文件**
+- [x] **步骤 1：初始化 Git 并忽略敏感/生成文件**
 
 执行：git init
 
 忽略 .env、.next、node_modules、contracts/cache、contracts/out、coverage、server/bin 和编辑器文件。
 
-- [ ] **步骤 2：获取 o1 已验证生产源码**
+- [x] **步骤 2：获取 o1 已验证生产源码**
 
 从区块浏览器下载：
 
@@ -115,7 +115,7 @@ FeeEscrow            0xa2cBD9065cec93c443CAFb0837A62800EE7C4A84
 
 在 SOURCE.md 记录浏览器 URL、编译器版本、优化参数、获取日期和 SHA-256。vendor 文件只读，不直接修改。
 
-- [ ] **步骤 3：写入 Base Sepolia 部署清单**
+- [x] **步骤 3：写入 Base Sepolia 部署清单**
 
 ~~~json
 {
@@ -134,11 +134,11 @@ FeeEscrow            0xa2cBD9065cec93c443CAFb0837A62800EE7C4A84
 }
 ~~~
 
-- [ ] **步骤 4：准备已有 PostgreSQL 与环境变量模板**
+- [x] **步骤 4：准备已有 PostgreSQL 与环境变量模板**
 
-复用本机现有 Docker PostgreSQL，新建独立数据库 o1_launchpad_mvp，并执行 Migration。定义 DATABASE_URL、BASE_SEPOLIA_RPC_URL、BASE_SEPOLIA_WS_URL、SESSION_SECRET、NEXT_PUBLIC_API_URL 和 NEXT_PUBLIC_RPC_URL，但不写真实值。docker-compose.yml 不是启动前提。
+复用本机现有 Docker PostgreSQL，新建独立数据库 o1_launchpad_mvp；Migration 在任务 8 编写后执行。定义 DATABASE_URL、BASE_SEPOLIA_RPC_URL、BASE_SEPOLIA_WS_URL、SESSION_SECRET、NEXT_PUBLIC_API_URL 和 NEXT_PUBLIC_RPC_URL，但不写真实值。docker-compose.yml 不是启动前提。
 
-- [ ] **步骤 5：检查密钥并提交**
+- [x] **步骤 5：检查密钥并提交**
 
 执行：
 
