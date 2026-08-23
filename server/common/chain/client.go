@@ -26,6 +26,7 @@ type Deployment struct {
 	FeeEscrow       string `json:"feeEscrow"`
 	Quote           string `json:"quote"`
 	DeploymentBlock uint64 `json:"deploymentBlock"`
+	TickSpacing     int64  `json:"tickSpacing"`
 }
 
 type Client struct {

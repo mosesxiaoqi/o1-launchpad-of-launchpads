@@ -5,6 +5,7 @@ import (
 
 	"o1-launchpad/service/launchpad/api/internal/svc"
 	"o1-launchpad/service/launchpad/api/internal/types"
+	"o1-launchpad/service/launchpad/rpc/launchpadclient"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -24,7 +25,14 @@ func NewPrepareSwapLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Prepa
 }
 
 func (l *PrepareSwapLogic) PrepareSwap(req *types.PrepareSwapRequest) (resp *types.PreparedTransaction, err error) {
-	// todo: add your logic here and delete this line
-
-	return
+	result, err := l.svcCtx.Launchpad.PrepareSwap(l.ctx, &launchpadclient.PrepareSwapRequest{
+		ChainId: req.ChainId, QuoteId: req.QuoteId, SlippageBps: req.SlippageBps, Wallet: req.Wallet,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &types.PreparedTransaction{
+		ChainId: result.ChainId, From: result.From, To: result.To, Data: result.Data, Value: result.Value,
+		Deadline: result.Deadline, Review: result.Review,
+	}, nil
 }

@@ -8,6 +8,7 @@ import (
 	"o1-launchpad/common/chain"
 	"o1-launchpad/common/database"
 	"o1-launchpad/common/model"
+	"o1-launchpad/common/swap"
 	"o1-launchpad/service/launchpad/rpc/internal/config"
 )
 
@@ -17,6 +18,7 @@ type ServiceContext struct {
 	Chain      *chain.Client
 	Model      *model.Model
 	Deployment chain.Deployment
+	Quotes     *swap.Store
 }
 
 func NewServiceContext(c config.Config) *ServiceContext {
@@ -42,5 +44,6 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		Chain:      chainClient,
 		Model:      model.New(db),
 		Deployment: deployment,
+		Quotes:     swap.NewStore(),
 	}
 }
