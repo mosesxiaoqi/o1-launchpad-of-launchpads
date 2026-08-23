@@ -1,0 +1,13 @@
+.DS_Store
+.env
+.env.*
+!.env.example
+.idea/
+.vscode/
+node_modules/
+.next/
+coverage/
+contracts/cache/
+contracts/out/
+server/bin/
+
