@@ -682,23 +682,23 @@ Indexer 启动时使用 conf.MustLoad(*configFile,&c,conf.UseEnv())，调用 c.M
 - 自动携带 Cookie 的本地 API Client
 - wagmi/viem 只配置 Base Sepolia
 
-- [ ] **步骤 1：只安装必要依赖**
+- [x] **步骤 1：只安装必要依赖**
 
 Next、wagmi、viem、TanStack Query、Vitest、Testing Library 和 Playwright。不引入 UI 框架。
 
-- [ ] **步骤 2：写 slug 与 Receipt 失败测试**
+- [x] **步骤 2：写 slug 与 Receipt 失败测试**
 
 只有来自配置 Factory 的 Launched Event 可以被解析为成功结果。
 
-- [ ] **步骤 3：实现 Chain Provider 与生成 ABI 导出**
+- [x] **步骤 3：实现 Chain Provider 与生成 ABI 导出**
 
 连接链不是 84532 时禁用写操作，并提供 switch-network。
 
-- [ ] **步骤 4：实现 API Client**
+- [x] **步骤 4：实现 API Client**
 
 Fetch 使用 credentials: include；按 status/code 解析 problem response；不得引用 o1 API。
 
-- [ ] **步骤 5：运行并提交**
+- [x] **步骤 5：运行并提交**
 
 执行：cd web && npm test -- --run && npm run build
 

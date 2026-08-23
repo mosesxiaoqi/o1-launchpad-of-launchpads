@@ -1,0 +1,40 @@
+'use client'
+
+import { useAccount, useConnect, useDisconnect, useSwitchChain } from 'wagmi'
+
+import { chain } from '@/lib/wagmi'
+
+export function useBaseSepoliaWriteReady() {
+  const { chainId, isConnected } = useAccount()
+  return isConnected && chainId === chain.id
+}
+
+export function ConnectWallet() {
+  const { address, chainId, isConnected } = useAccount()
+  const { connectors, mutate: connect, isPending: isConnecting } = useConnect()
+  const { mutate: disconnect } = useDisconnect()
+  const { mutate: switchChain, isPending: isSwitching } = useSwitchChain()
+
+  if (!isConnected) {
+    const connector = connectors[0]
+    return (
+      <button disabled={!connector || isConnecting} onClick={() => connector && connect({ connector })}>
+        {isConnecting ? '连接中…' : '连接钱包'}
+      </button>
+    )
+  }
+
+  if (chainId !== chain.id) {
+    return (
+      <button disabled={isSwitching} onClick={() => switchChain({ chainId: chain.id })}>
+        {isSwitching ? '切换中…' : '切换到 Base Sepolia'}
+      </button>
+    )
+  }
+
+  return (
+    <button onClick={() => disconnect()} title={address}>
+      {address?.slice(0, 6)}…{address?.slice(-4)} · 断开
+    </button>
+  )
+}
