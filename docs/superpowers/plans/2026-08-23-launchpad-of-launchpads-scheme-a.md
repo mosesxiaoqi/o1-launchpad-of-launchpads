@@ -717,21 +717,21 @@ Fetch 使用 credentials: include；按 status/code 解析 problem response；�
 **接口：**
 - 钱包登录 → 调用 Registry → 提交品牌和 TxHash → 跳转 /launchpad/{slug}
 
-- [ ] **步骤 1：写 UI 失败测试**
+- [x] **步骤 1：写 UI 失败测试**
 
 覆盖未连接钱包、错误链、表单错误、拒绝签名、Registry 回滚、API 验证延迟、成功跳转和失败时保留输入。
 
-- [ ] **步骤 2：实现 EIP-191 Challenge 登录**
+- [x] **步骤 2：实现 EIP-191 Challenge 登录**
 
-- [ ] **步骤 3：实现 Registry 交易和 API 验证**
+- [x] **步骤 3：实现 Registry 交易和 API 验证**
 
 MVP Treasury 默认使用连接钱包。分别展示 waiting for wallet、confirming onchain、saving branding。
 
-- [ ] **步骤 4：验证可访问性**
+- [x] **步骤 4：验证可访问性**
 
 所有输入有 Label；错误通过 aria-describedby 关联；焦点移动到首个错误项；交易状态使用 aria-live。
 
-- [ ] **步骤 5：运行并提交**
+- [x] **步骤 5：运行并提交**
 
 执行：cd web && npm test -- --run app/create-launchpad/page.test.tsx
 
