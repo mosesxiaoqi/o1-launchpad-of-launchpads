@@ -349,21 +349,21 @@ launchTime 时为 9900 bps，中间单调不增，launchTime+16 及之后精确�
 - 依赖 Registry、Hook、PoolManager、Quote 配置、供应量、流动性 Bands 和 Treasury Policy。
 - 发出 Launched(token,poolId,launchpadId,creator,quote,supply,tickSpacing)。
 
-- [ ] **步骤 1：写未知/暂停 Launchpad、过期配置、过期 deadline 和 salt 重放失败测试**
+- [x] **步骤 1：写未知/暂停 Launchpad、过期配置、过期 deadline 和 salt 重放失败测试**
 
-- [ ] **步骤 2：写成功发行失败测试**
+- [x] **步骤 2：写成功发行失败测试**
 
 验证 Token 供应量、Pool ID、Creator、Treasury、100/50 费率和事件中的 launchpadId。
 
-- [ ] **步骤 3：移植 o1 Factory 流程**
+- [x] **步骤 3：移植 o1 Factory 流程**
 
 保留 configVersion、salt 防重放、Quote 注册、PoolKey/Tick/Bands、Pool 初始化、Hook 注册和 Seed；用 new LaunchToken 替换 B20 创建，并增加 Registry 校验。
 
-- [ ] **步骤 4：增加不可变性测试**
+- [x] **步骤 4：增加不可变性测试**
 
 用户不能提交费率/Treasury；Registry Treasury 修改只影响未来 Pool；每个 Token 只能对应一个 Pool 和 launchpadId。
 
-- [ ] **步骤 5：运行完整合约测试**
+- [x] **步骤 5：运行完整合约测试**
 
 执行：
 
@@ -374,7 +374,7 @@ forge test -vv
 forge test --fuzz-runs 1000
 ~~~
 
-- [ ] **步骤 6：提交**
+- [x] **步骤 6：提交**
 
 提交信息：feat: launch tokens under registered tenants
 
