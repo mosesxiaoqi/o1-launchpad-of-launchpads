@@ -752,21 +752,21 @@ MVP Treasury 默认使用连接钱包。分别展示 waiting for wallet、confir
 - 调用 POST /v1/launches/prepare 获取包含新 configVersion 和最新区块时间+30 分钟 deadline 的未签名 Factory 交易。
 - Receipt 立即展示；随后轮询本地交易状态。
 
-- [ ] **步骤 1：写 Tenant 渲染和未知 slug 测试**
+- [x] **步骤 1：写 Tenant 渲染和未知 slug 测试**
 
-- [ ] **步骤 2：写发行确认页测试**
+- [x] **步骤 2：写发行确认页测试**
 
 签名前必须展示固定供应量、永久流动性、1% 协议费、0.5% LaaS、1.5% 总费率、16 秒 anti-snipe、Quote、launchpadId 和 Treasury。
 
-- [ ] **步骤 3：实现 Prepare + 钱包广播**
+- [x] **步骤 3：实现 Prepare + 钱包广播**
 
 生成随机 bytes32 salt，调用 /v1/launches/prepare，展示服务器返回的 Review，然后将 to、data、value 原样交给钱包。遇到 stale_plan、StaleConfig 或 LaunchExpired 时重新 Prepare，并要求用户重新审阅和签名。
 
-- [ ] **步骤 4：实现 Receipt-first 对账**
+- [x] **步骤 4：实现 Receipt-first 对账**
 
 只解析配置 Factory；立即显示 confirming；使用有上限的指数退避轮询，直到 confirmed 或 reverted。
 
-- [ ] **步骤 5：运行并提交**
+- [x] **步骤 5：运行并提交**
 
 执行：cd web && npm test -- --run && npm run build
 

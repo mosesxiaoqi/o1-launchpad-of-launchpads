@@ -73,6 +73,31 @@ export type PreparedTransaction = {
   review: string
 }
 
+export type Token = {
+  chain_id: number
+  token: `0x${string}`
+  pool_id: `0x${string}`
+  launchpad_id: `0x${string}`
+  launchpad_slug: string
+  creator: `0x${string}`
+  quote: `0x${string}`
+  supply: string
+  tx_hash: `0x${string}`
+  block_number: number
+  status: string
+  created_at: string
+}
+
+export type ChainTransaction = {
+  chain_id: number
+  tx_hash: `0x${string}`
+  kind: string
+  status: 'pending' | 'confirming' | 'confirmed' | 'reverted'
+  block_number: number
+  failure_reason: string
+  updated_at: string
+}
+
 function post<T>(path: string, body: unknown) {
   return api<T>(path, { method: 'POST', body: JSON.stringify(body) })
 }
@@ -89,6 +114,10 @@ export const launchpadApi = {
       `/v1/launchpads?limit=25&cursor=${encodeURIComponent(cursor)}`,
     ),
   getLaunchpad: (slug: string) => api<Launchpad>(`/v1/launchpads/${encodeURIComponent(slug)}`),
+  listLaunchpadTokens: (slug: string, cursor = '') =>
+    api<{ tokens: Token[]; next_cursor: string }>(
+      `/v1/launchpads/${encodeURIComponent(slug)}/tokens?limit=25&cursor=${encodeURIComponent(cursor)}`,
+    ),
   createLaunchpad: (body: {
     chain_id: number
     slug: string
@@ -98,8 +127,18 @@ export const launchpadApi = {
     primary_color?: string
     registry_tx_hash: string
   }) => post<Launchpad>('/v1/launchpads', body),
-  prepareLaunch: (body: Record<string, unknown>) =>
+  prepareLaunch: (body: {
+    chain_id: number
+    launchpad_id: string
+    name: string
+    symbol: string
+    contract_uri?: string
+    salt: string
+    wallet: string
+  }) =>
     post<PreparedTransaction>('/v1/launches/prepare', body),
+  transaction: (chainId: number, hash: string) =>
+    api<ChainTransaction>(`/v1/transactions/${chainId}/${encodeURIComponent(hash)}`),
   quoteSwap: (body: Record<string, unknown>) =>
     post<{ quote_id: string; amount_in: string; amount_out: string; fee: string; expires_at: number }>(
       '/v1/swaps/quote',
