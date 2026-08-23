@@ -628,7 +628,7 @@ Name 1–80 字符，Description 不超过 1000 UTF-8 bytes，Logo 必须 HTTPS�
 - POST /v1/swaps/prepare
 - POST /v1/claims/fees/prepare
 
-- [ ] **步骤 1：从 Foundry Artifact 生成 ABI Binding**
+- [x] **步骤 1：从 Foundry Artifact 生成 ABI Binding**
 
 ~~~bash
 cd contracts && forge build
@@ -637,15 +637,15 @@ cd ../server && go generate ./common/chain
 
 生成文件提交到仓库，生产构建不依赖 Foundry。
 
-- [ ] **步骤 2：写事件解析与幂等失败测试**
+- [x] **步骤 2：写事件解析与幂等失败测试**
 
 使用真实编码的 Launched Log，精确验证 Token、Pool ID、launchpadId、Creator、Quote、Supply、Block、Tx、LogIndex 和 Factory；重复播放只产生一条记录。
 
-- [ ] **步骤 3：写重组失败测试**
+- [x] **步骤 3：写重组失败测试**
 
 替换已保存区块的 Hash 和 Log，验证先删除孤块记录再播放 canonical Log。
 
-- [ ] **步骤 4：实现有界轮询**
+- [x] **步骤 4：实现有界轮询**
 
 索引到 latest-2，单批最多 500 个区块。Hash 不匹配时最多回退 64 个区块；找不到共同祖先则停止并报错。
 
@@ -657,7 +657,7 @@ Cursor 使用 created_at+id，默认 25、最大 100；大整数使用十进制�
 
 Gateway 将 RPC 错误映射为 problem JSON，并保持 o1 兼容的 HTTP 路径和字段命名。Gateway 不读取 PostgreSQL、Base RPC 或部署清单。
 
-- [ ] **步骤 7：实现 Indexer 启动与依赖装配**
+- [x] **步骤 7：实现 Indexer 启动与依赖装配**
 
 Indexer 启动时使用 conf.MustLoad(*configFile,&c,conf.UseEnv())，调用 c.MustSetUp()，从 ServiceContext 获取 Model/RPC/Deployment，不直接读取环境变量或硬编码地址。
 

@@ -5,6 +5,7 @@ import (
 
 	"o1-launchpad/service/launchpad/api/internal/svc"
 	"o1-launchpad/service/launchpad/api/internal/types"
+	"o1-launchpad/service/launchpad/rpc/launchpadclient"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -24,7 +25,12 @@ func NewGetConfigLogic(ctx context.Context, svcCtx *svc.ServiceContext) *GetConf
 }
 
 func (l *GetConfigLogic) GetConfig() (resp *types.ConfigResponse, err error) {
-	// todo: add your logic here and delete this line
-
-	return
+	result, err := l.svcCtx.Launchpad.GetConfig(l.ctx, &launchpadclient.Empty{})
+	if err != nil {
+		return nil, err
+	}
+	return &types.ConfigResponse{
+		ChainId: result.ChainId, Registry: result.Registry, Factory: result.Factory, Hook: result.Hook,
+		FeeEscrow: result.FeeEscrow, Quote: result.Quote, ConfigVersion: result.ConfigVersion,
+	}, nil
 }

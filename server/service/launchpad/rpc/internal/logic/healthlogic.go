@@ -24,7 +24,8 @@ func NewHealthLogic(ctx context.Context, svcCtx *svc.ServiceContext) *HealthLogi
 }
 
 func (l *HealthLogic) Health(in *launchpad.Empty) (*launchpad.HealthResponse, error) {
-	// todo: add your logic here and delete this line
-
-	return &launchpad.HealthResponse{}, nil
+	if err := l.svcCtx.DB.PingContext(l.ctx); err != nil {
+		return nil, err
+	}
+	return &launchpad.HealthResponse{Status: "ok"}, nil
 }

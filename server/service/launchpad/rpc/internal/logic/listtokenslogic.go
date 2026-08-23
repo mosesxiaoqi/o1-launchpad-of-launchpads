@@ -24,7 +24,17 @@ func NewListTokensLogic(ctx context.Context, svcCtx *svc.ServiceContext) *ListTo
 }
 
 func (l *ListTokensLogic) ListTokens(in *launchpad.ListTokensRequest) (*launchpad.ListTokensResponse, error) {
-	// todo: add your logic here and delete this line
-
-	return &launchpad.ListTokensResponse{}, nil
+	limit := int(in.Limit)
+	if limit <= 0 || limit > 100 {
+		limit = 25
+	}
+	items, err := l.svcCtx.Model.ListTokens(l.ctx, in.ChainId, limit)
+	if err != nil {
+		return nil, err
+	}
+	response := &launchpad.ListTokensResponse{Tokens: make([]*launchpad.Token, 0, len(items))}
+	for _, item := range items {
+		response.Tokens = append(response.Tokens, tokenInfo(item))
+	}
+	return response, nil
 }

@@ -24,7 +24,9 @@ func NewGetConfigLogic(ctx context.Context, svcCtx *svc.ServiceContext) *GetConf
 }
 
 func (l *GetConfigLogic) GetConfig(in *launchpad.Empty) (*launchpad.GetConfigResponse, error) {
-	// todo: add your logic here and delete this line
-
-	return &launchpad.GetConfigResponse{}, nil
+	deployment := l.svcCtx.Deployment
+	return &launchpad.GetConfigResponse{
+		ChainId: deployment.ChainID, Registry: deployment.Registry, Factory: deployment.Factory,
+		Hook: deployment.Hook, FeeEscrow: deployment.FeeEscrow, Quote: deployment.Quote, ConfigVersion: 1,
+	}, nil
 }

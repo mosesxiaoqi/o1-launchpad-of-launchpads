@@ -5,6 +5,7 @@ import (
 
 	"o1-launchpad/service/launchpad/api/internal/svc"
 	"o1-launchpad/service/launchpad/api/internal/types"
+	"o1-launchpad/service/launchpad/rpc/launchpadclient"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -24,7 +25,14 @@ func NewGetTransactionLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Ge
 }
 
 func (l *GetTransactionLogic) GetTransaction(req *types.TransactionPath) (resp *types.TransactionInfo, err error) {
-	// todo: add your logic here and delete this line
-
-	return
+	item, err := l.svcCtx.Launchpad.GetTransaction(l.ctx, &launchpadclient.GetTransactionRequest{
+		ChainId: req.ChainId, TxHash: req.TxHash,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &types.TransactionInfo{
+		ChainId: item.ChainId, TxHash: item.TxHash, Kind: item.Kind, Status: item.Status,
+		BlockNumber: item.BlockNumber, FailureReason: item.FailureReason, UpdatedAt: item.UpdatedAt,
+	}, nil
 }

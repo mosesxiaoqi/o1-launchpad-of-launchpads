@@ -32,6 +32,48 @@ type TokenLaunch struct {
 	LaunchpadSlug string
 }
 
+func (m *Model) GetToken(ctx context.Context, chainID int64, token []byte) (TokenLaunch, error) {
+	var item TokenLaunch
+	err := m.db.QueryRowContext(ctx, `
+		SELECT t.chain_id, p.launchpad_id, t.token, t.pool_id, t.creator, t.quote, t.factory,
+		       t.supply::text, t.tx_hash, t.block_number, t.block_hash, t.log_index, t.status,
+		       t.created_at, p.slug
+		FROM token_launches t JOIN launchpads p ON p.id=t.launchpad_pk
+		WHERE t.chain_id=$1 AND t.token=$2`, chainID, token,
+	).Scan(
+		&item.ChainID, &item.LaunchpadID, &item.Token, &item.PoolID, &item.Creator, &item.Quote,
+		&item.Factory, &item.Supply, &item.TxHash, &item.BlockNumber, &item.BlockHash,
+		&item.LogIndex, &item.Status, &item.CreatedAt, &item.LaunchpadSlug,
+	)
+	return item, err
+}
+
+func (m *Model) ListTokens(ctx context.Context, chainID int64, limit int) ([]TokenLaunch, error) {
+	rows, err := m.db.QueryContext(ctx, `
+		SELECT t.chain_id, p.launchpad_id, t.token, t.pool_id, t.creator, t.quote, t.factory,
+		       t.supply::text, t.tx_hash, t.block_number, t.block_hash, t.log_index, t.status,
+		       t.created_at, p.slug
+		FROM token_launches t JOIN launchpads p ON p.id=t.launchpad_pk
+		WHERE t.chain_id=$1 ORDER BY t.created_at DESC, t.id DESC LIMIT $2`, chainID, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var launches []TokenLaunch
+	for rows.Next() {
+		var item TokenLaunch
+		if err := rows.Scan(
+			&item.ChainID, &item.LaunchpadID, &item.Token, &item.PoolID, &item.Creator, &item.Quote,
+			&item.Factory, &item.Supply, &item.TxHash, &item.BlockNumber, &item.BlockHash,
+			&item.LogIndex, &item.Status, &item.CreatedAt, &item.LaunchpadSlug,
+		); err != nil {
+			return nil, err
+		}
+		launches = append(launches, item)
+	}
+	return launches, rows.Err()
+}
+
 func (m *Model) ApplyLaunchEvent(ctx context.Context, event LaunchEvent, checkpoint Checkpoint) error {
 	return m.transact(ctx, func(tx *sql.Tx) error {
 		existing, err := getLaunchEventTx(ctx, tx, event.ChainID, event.Token)

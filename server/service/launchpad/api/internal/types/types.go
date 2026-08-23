@@ -103,10 +103,12 @@ type PrepareSwapRequest struct {
 
 type PreparedTransaction struct {
 	ChainId  int64  `json:"chain_id"`
+	From     string `json:"from"`
 	To       string `json:"to"`
 	Data     string `json:"data"`
 	Value    string `json:"value"`
 	Deadline uint64 `json:"deadline"`
+	Review   string `json:"review"`
 }
 
 type QuoteSwapRequest struct {

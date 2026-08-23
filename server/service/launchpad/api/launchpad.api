@@ -61,10 +61,12 @@ type TransactionInfo {
 
 type PreparedTransaction {
 	ChainId  int64  `json:"chain_id"`
+	From     string `json:"from"`
 	To       string `json:"to"`
 	Data     string `json:"data"`
 	Value    string `json:"value"`
 	Deadline uint64 `json:"deadline"`
+	Review   string `json:"review"`
 }
 
 type PageRequest {
@@ -269,4 +271,3 @@ service launchpad-api {
 	@handler verifyAuthSignature
 	post /auth/verify (VerifyAuthSignatureRequest) returns (VerifyAuthSignatureResponse)
 }
-

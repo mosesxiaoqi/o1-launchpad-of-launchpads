@@ -129,6 +129,8 @@ message PreparedTransaction {
   string data = 3;
   string value = 4;
   uint64 deadline = 5;
+  string from = 6;
+  string review = 7;
 }
 
 message QuoteSwapRequest {
