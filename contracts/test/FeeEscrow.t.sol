@@ -3,6 +3,9 @@ pragma solidity 0.8.26;
 
 import {Test} from "forge-std/Test.sol";
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import {IPoolManager} from "v4-core/src/interfaces/IPoolManager.sol";
+import {IUnlockCallback} from "v4-core/src/interfaces/callback/IUnlockCallback.sol";
+import {Currency} from "v4-core/src/types/Currency.sol";
 
 import {FeeEscrow} from "../src/FeeEscrow.sol";
 
@@ -14,19 +17,49 @@ contract MockCurrency is ERC20 {
     }
 }
 
+contract MockClaimPoolManager {
+    mapping(address owner => mapping(uint256 id => uint256 amount)) public balanceOf;
+
+    function mintClaim(address owner, address currency, uint256 amount) external {
+        balanceOf[owner][uint160(currency)] += amount;
+    }
+
+    function unlock(bytes calldata data) external returns (bytes memory) {
+        return IUnlockCallback(msg.sender).unlockCallback(data);
+    }
+
+    function burn(address from, uint256 id, uint256 amount) external {
+        balanceOf[from][id] -= amount;
+    }
+
+    function take(Currency currency, address to, uint256 amount) external {
+        address currencyAddress = Currency.unwrap(currency);
+        if (currencyAddress == address(0)) {
+            (bool success,) = to.call{value: amount}("");
+            require(success);
+        } else {
+            MockCurrency(currencyAddress).transfer(to, amount);
+        }
+    }
+
+    receive() external payable {}
+}
+
 contract ReentrantCurrency is MockCurrency {
     FeeEscrow internal target;
     address internal reentrantRecipient;
+    address internal transferSource;
     bool public reentryAttempted;
     bool public reentrySucceeded;
 
-    function configureReentry(FeeEscrow target_, address reentrantRecipient_) external {
+    function configureReentry(FeeEscrow target_, address reentrantRecipient_, address transferSource_) external {
         target = target_;
         reentrantRecipient = reentrantRecipient_;
+        transferSource = transferSource_;
     }
 
     function _update(address from, address to, uint256 value) internal override {
-        if (address(target) != address(0) && from == address(target) && !reentryAttempted) {
+        if (address(target) != address(0) && from == transferSource && !reentryAttempted) {
             reentryAttempted = true;
             (reentrySucceeded,) =
                 address(target).call(abi.encodeCall(FeeEscrow.claim, (reentrantRecipient, address(this))));
@@ -37,18 +70,20 @@ contract ReentrantCurrency is MockCurrency {
 
 contract FeeEscrowTest is Test {
     FeeEscrow internal escrow;
+    MockClaimPoolManager internal manager;
     MockCurrency internal currency;
 
     address internal hook = makeAddr("hook");
     address internal recipient = makeAddr("recipient");
 
     function setUp() public {
-        escrow = new FeeEscrow(hook);
+        manager = new MockClaimPoolManager();
+        escrow = new FeeEscrow(IPoolManager(address(manager)), hook);
         currency = new MockCurrency();
     }
 
     function testClaimPaysAndClears() public {
-        currency.mint(address(escrow), 10 ether);
+        _fundClaim(currency, 10 ether);
         vm.prank(hook);
         escrow.credit(recipient, address(currency), 10 ether);
 
@@ -59,14 +94,14 @@ contract FeeEscrowTest is Test {
     }
 
     function testOnlyHookCredits() public {
-        currency.mint(address(escrow), 1 ether);
+        _fundClaim(currency, 1 ether);
 
         vm.expectRevert(FeeEscrow.NotHook.selector);
         escrow.credit(recipient, address(currency), 1 ether);
     }
 
     function testRejectsZeroRecipientAndAmount() public {
-        currency.mint(address(escrow), 1 ether);
+        _fundClaim(currency, 1 ether);
 
         vm.startPrank(hook);
         vm.expectRevert(FeeEscrow.ZeroAddress.selector);
@@ -77,7 +112,7 @@ contract FeeEscrowTest is Test {
     }
 
     function testAggregateCreditCannotExceedActualBalance() public {
-        currency.mint(address(escrow), 10 ether);
+        _fundClaim(currency, 10 ether);
         vm.startPrank(hook);
         escrow.credit(recipient, address(currency), 6 ether);
 
@@ -88,7 +123,7 @@ contract FeeEscrowTest is Test {
 
     function testClaimToRedirectsOnlyCallersOwnBalance() public {
         address destination = makeAddr("destination");
-        currency.mint(address(escrow), 4 ether);
+        _fundClaim(currency, 4 ether);
         vm.prank(hook);
         escrow.credit(recipient, address(currency), 4 ether);
 
@@ -100,7 +135,8 @@ contract FeeEscrowTest is Test {
     }
 
     function testClaimPaysNativeCurrency() public {
-        vm.deal(address(escrow), 3 ether);
+        vm.deal(address(manager), 3 ether);
+        manager.mintClaim(address(escrow), address(0), 3 ether);
         vm.prank(hook);
         escrow.credit(recipient, address(0), 3 ether);
 
@@ -111,7 +147,7 @@ contract FeeEscrowTest is Test {
     }
 
     function testClaimCannotPayTwice() public {
-        currency.mint(address(escrow), 2 ether);
+        _fundClaim(currency, 2 ether);
         vm.prank(hook);
         escrow.credit(recipient, address(currency), 2 ether);
         escrow.claim(recipient, address(currency));
@@ -124,12 +160,13 @@ contract FeeEscrowTest is Test {
     function testTokenTransferCannotReenterAnotherClaim() public {
         ReentrantCurrency malicious = new ReentrantCurrency();
         address secondRecipient = address(malicious);
-        malicious.mint(address(escrow), 15 ether);
+        malicious.mint(address(manager), 15 ether);
+        manager.mintClaim(address(escrow), address(malicious), 15 ether);
         vm.startPrank(hook);
         escrow.credit(recipient, address(malicious), 10 ether);
         escrow.credit(secondRecipient, address(malicious), 5 ether);
         vm.stopPrank();
-        malicious.configureReentry(escrow, secondRecipient);
+        malicious.configureReentry(escrow, secondRecipient, address(manager));
 
         escrow.claim(recipient, address(malicious));
 
@@ -141,7 +178,7 @@ contract FeeEscrowTest is Test {
 
     function testFuzzPaidPlusOwedNeverExceedsReceived(uint128 rawAmount) public {
         uint256 amount = bound(uint256(rawAmount), 1, type(uint128).max);
-        currency.mint(address(escrow), amount);
+        _fundClaim(currency, amount);
         vm.prank(hook);
         escrow.credit(recipient, address(currency), amount);
 
@@ -150,5 +187,10 @@ contract FeeEscrowTest is Test {
         escrow.claim(recipient, address(currency));
 
         assertEq(currency.balanceOf(recipient) + escrow.totalOwed(address(currency)), amount);
+    }
+
+    function _fundClaim(MockCurrency token, uint256 amount) internal {
+        token.mint(address(manager), amount);
+        manager.mintClaim(address(escrow), address(token), amount);
     }
 }

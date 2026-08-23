@@ -19,3 +19,21 @@ contracts/lib/openzeppelin-contracts/*
 !contracts/lib/openzeppelin-contracts/contracts/
 !contracts/lib/openzeppelin-contracts/contracts/**
 !contracts/lib/openzeppelin-contracts/LICENSE
+
+# Track only the pinned v4-core build/test source subset.
+contracts/lib/v4-core/*
+!contracts/lib/v4-core/src/
+!contracts/lib/v4-core/src/**
+!contracts/lib/v4-core/test/
+contracts/lib/v4-core/test/*
+!contracts/lib/v4-core/test/utils/
+!contracts/lib/v4-core/test/utils/**
+!contracts/lib/v4-core/licenses/
+!contracts/lib/v4-core/licenses/**
+!contracts/lib/v4-core/lib/
+contracts/lib/v4-core/lib/*
+!contracts/lib/v4-core/lib/solmate/
+contracts/lib/v4-core/lib/solmate/*
+!contracts/lib/v4-core/lib/solmate/src/
+!contracts/lib/v4-core/lib/solmate/src/**
+!contracts/lib/v4-core/lib/solmate/LICENSE

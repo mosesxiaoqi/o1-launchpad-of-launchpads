@@ -1,21 +1,21 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.26;
 
-import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import {IPoolManager} from "v4-core/src/interfaces/IPoolManager.sol";
+import {IUnlockCallback} from "v4-core/src/interfaces/callback/IUnlockCallback.sol";
+import {Currency} from "v4-core/src/types/Currency.sol";
 
-contract FeeEscrow is ReentrancyGuard {
-    using SafeERC20 for IERC20;
-
+contract FeeEscrow is IUnlockCallback, ReentrancyGuard {
+    IPoolManager public immutable poolManager;
     address public immutable hook;
 
     mapping(address recipient => mapping(address currency => uint256 amount)) public owed;
     mapping(address currency => uint256 amount) public totalOwed;
 
     error InsufficientEscrowBalance(uint256 available, uint256 required);
-    error NativeTransferFailed();
     error NotHook();
+    error NotPoolManager();
     error NothingToClaim();
     error ZeroAddress();
     error ZeroAmount();
@@ -24,12 +24,11 @@ contract FeeEscrow is ReentrancyGuard {
     event Credited(address indexed recipient, address indexed currency, uint256 amount);
     event Claimed(address indexed recipient, address indexed currency, address indexed to, uint256 amount);
 
-    constructor(address hook_) {
-        if (hook_ == address(0)) revert ZeroAddress();
+    constructor(IPoolManager poolManager_, address hook_) {
+        if (address(poolManager_) == address(0) || hook_ == address(0)) revert ZeroAddress();
+        poolManager = poolManager_;
         hook = hook_;
     }
-
-    receive() external payable {}
 
     function credit(address recipient, address currency, uint256 amount) external {
         if (msg.sender != hook) revert NotHook();
@@ -37,7 +36,7 @@ contract FeeEscrow is ReentrancyGuard {
         if (amount == 0) revert ZeroAmount();
 
         uint256 nextTotal = totalOwed[currency] + amount;
-        uint256 balance = currency == address(0) ? address(this).balance : IERC20(currency).balanceOf(address(this));
+        uint256 balance = poolManager.balanceOf(address(this), uint160(currency));
         if (nextTotal > balance) revert InsufficientEscrowBalance(balance, nextTotal);
 
         owed[recipient][currency] += amount;
@@ -57,17 +56,18 @@ contract FeeEscrow is ReentrancyGuard {
     function _claim(address recipient, address currency, address to) private {
         uint256 amount = owed[recipient][currency];
         if (amount == 0) revert NothingToClaim();
-
         owed[recipient][currency] = 0;
         totalOwed[currency] -= amount;
-
-        if (currency == address(0)) {
-            (bool success,) = to.call{value: amount}("");
-            if (!success) revert NativeTransferFailed();
-        } else {
-            IERC20(currency).safeTransfer(to, amount);
-        }
-
+        poolManager.unlock(abi.encode(to, currency, amount));
         emit Claimed(recipient, currency, to, amount);
+    }
+
+    function unlockCallback(bytes calldata data) external returns (bytes memory) {
+        if (msg.sender != address(poolManager)) revert NotPoolManager();
+        (address recipient, address currencyAddress, uint256 amount) = abi.decode(data, (address, address, uint256));
+        Currency currency = Currency.wrap(currencyAddress);
+        poolManager.burn(address(this), currency.toId(), amount);
+        poolManager.take(currency, recipient, amount);
+        return "";
     }
 }

@@ -252,11 +252,11 @@ function testClaimPaysAndClears() public {
 
 - [x] **步骤 4：移植 o1 Escrow 语义**
 
-使用 SafeERC20、ReentrancyGuard、CEI 和 custom error；拒绝零地址、零金额和超过实际余额的记账。
+使用 PoolManager ERC-6909 claim、ReentrancyGuard、CEI 和 custom error；Swap 期间接收 claim，领取时在独立 unlock 中 burn claim 并 take 真实资产。拒绝零地址、零金额和超过实际 claim 余额的记账。直接 SafeERC20 转账与 v4 Router 的 settle 时序不兼容，不采用。
 
 - [x] **步骤 5：增加 Fuzz 与恶意 Token 重入测试**
 
-验证已支付金额加未领取余额永不超过实际收到金额，Claim 不会重复支付。
+验证已支付金额加未领取余额永不超过可赎回 claim，Claim 不会重复支付。
 
 - [x] **步骤 6：运行并提交**
 
@@ -320,19 +320,19 @@ launchTime 时为 9900 bps，中间单调不增，launchTime+16 及之后精确�
 - registerPool(PoolKey,PoolConfigInput) 和 seed(PoolKey,uint256) 只能由 Factory 调用一次。
 - 外部增加/移除流动性，以及 anti-snipe 期间 exact-output 必须回滚。
 
-- [ ] **步骤 1：写非 Factory、重复注册、重复 Seed、非法 PoolManager 和流动性修改失败测试**
+- [x] **步骤 1：写非 Factory、重复注册、重复 Seed、非法 PoolManager 和流动性修改失败测试**
 
-- [ ] **步骤 2：写 Uniswap v4 集成失败测试**
+- [x] **步骤 2：写 Uniswap v4 集成失败测试**
 
 初始化 Pool、注入完整供应量、执行 exact-input 买卖，并验证配对资产进入 Escrow。
 
-- [ ] **步骤 3：移植 o1 的权限位、注册、Seed 和流动性锁定逻辑**
+- [x] **步骤 3：移植 o1 的权限位、注册、Seed 和流动性锁定逻辑**
 
-- [ ] **步骤 4：验证 Hook 地址权限位并运行测试**
+- [x] **步骤 4：验证 Hook 地址权限位并运行测试**
 
 执行：cd contracts && forge test --match-path 'test/LaunchHookV2*.t.sol' -vv
 
-- [ ] **步骤 5：提交**
+- [x] **步骤 5：提交**
 
 提交信息：feat: enforce frozen launch pools
 

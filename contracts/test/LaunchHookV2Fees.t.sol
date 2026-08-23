@@ -2,10 +2,13 @@
 pragma solidity 0.8.26;
 
 import {Test} from "forge-std/Test.sol";
+import {IPoolManager} from "v4-core/src/interfaces/IPoolManager.sol";
 
 import {LaunchHookV2} from "../src/LaunchHookV2.sol";
 
 contract LaunchHookV2Harness is LaunchHookV2 {
+    constructor() LaunchHookV2(IPoolManager(address(1)), msg.sender) {}
+
     function registerForTest(bytes32 poolId, PoolConfig calldata config) external {
         _registerPoolConfig(poolId, config);
     }
