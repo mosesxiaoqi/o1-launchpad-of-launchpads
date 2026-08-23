@@ -5,6 +5,7 @@ import (
 
 	"o1-launchpad/service/launchpad/api/internal/svc"
 	"o1-launchpad/service/launchpad/api/internal/types"
+	"o1-launchpad/service/launchpad/rpc/launchpadclient"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -24,7 +25,11 @@ func NewVerifyAuthSignatureLogic(ctx context.Context, svcCtx *svc.ServiceContext
 }
 
 func (l *VerifyAuthSignatureLogic) VerifyAuthSignature(req *types.VerifyAuthSignatureRequest) (resp *types.VerifyAuthSignatureResponse, err error) {
-	// todo: add your logic here and delete this line
-
-	return
+	result, err := l.svcCtx.Launchpad.VerifyAuthSignature(l.ctx, &launchpadclient.VerifyAuthSignatureRequest{
+		ChallengeId: req.ChallengeId, Address: req.Address, Signature: req.Signature,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &types.VerifyAuthSignatureResponse{Address: result.Address, ExpiresAt: result.ExpiresAt}, nil
 }

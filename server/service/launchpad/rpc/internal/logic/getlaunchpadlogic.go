@@ -24,7 +24,9 @@ func NewGetLaunchpadLogic(ctx context.Context, svcCtx *svc.ServiceContext) *GetL
 }
 
 func (l *GetLaunchpadLogic) GetLaunchpad(in *launchpad.GetLaunchpadRequest) (*launchpad.LaunchpadInfo, error) {
-	// todo: add your logic here and delete this line
-
-	return &launchpad.LaunchpadInfo{}, nil
+	item, err := l.svcCtx.Model.GetLaunchpadBySlug(l.ctx, in.ChainId, in.Slug)
+	if err != nil {
+		return nil, err
+	}
+	return launchpadInfo(item), nil
 }

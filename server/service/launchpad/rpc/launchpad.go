@@ -29,6 +29,7 @@ func main() {
 	}
 	ctx := svc.NewServiceContext(c)
 	defer ctx.DB.Close()
+	defer ctx.Chain.RPC.Close()
 
 	s := zrpc.MustNewServer(c.RpcServerConf, func(grpcServer *grpc.Server) {
 		launchpad.RegisterLaunchpadServer(grpcServer, server.NewLaunchpadServer(ctx))

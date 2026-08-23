@@ -33,6 +33,7 @@ func (l *IndexerLogic) Start() {
 func (l *IndexerLogic) Stop() {
 	l.once.Do(func() {
 		close(l.stop)
+		l.svcCtx.Chain.RPC.Close()
 		l.svcCtx.DB.Close()
 	})
 }

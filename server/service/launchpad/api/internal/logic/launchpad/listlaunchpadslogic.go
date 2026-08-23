@@ -5,6 +5,7 @@ import (
 
 	"o1-launchpad/service/launchpad/api/internal/svc"
 	"o1-launchpad/service/launchpad/api/internal/types"
+	"o1-launchpad/service/launchpad/rpc/launchpadclient"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -24,7 +25,13 @@ func NewListLaunchpadsLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Li
 }
 
 func (l *ListLaunchpadsLogic) ListLaunchpads(req *types.PageRequest) (resp *types.ListLaunchpadsResponse, err error) {
-	// todo: add your logic here and delete this line
-
-	return
+	result, err := l.svcCtx.Launchpad.ListLaunchpads(l.ctx, &launchpadclient.PageRequest{Limit: req.Limit, Cursor: req.Cursor})
+	if err != nil {
+		return nil, err
+	}
+	response := &types.ListLaunchpadsResponse{NextCursor: result.NextCursor, Launchpads: make([]types.LaunchpadInfo, 0, len(result.Launchpads))}
+	for _, item := range result.Launchpads {
+		response.Launchpads = append(response.Launchpads, mapLaunchpad(item))
+	}
+	return response, nil
 }

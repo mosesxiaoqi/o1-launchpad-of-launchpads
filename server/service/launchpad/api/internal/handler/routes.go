@@ -66,7 +66,7 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 			{
 				Method:  http.MethodPost,
 				Path:    "/launchpads",
-				Handler: launchpad.CreateLaunchpadHandler(serverCtx),
+				Handler: serverCtx.Session(launchpad.CreateLaunchpadHandler(serverCtx)),
 			},
 			{
 				Method:  http.MethodGet,

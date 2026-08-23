@@ -31,10 +31,15 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		db.Close()
 		panic(err)
 	}
+	chainClient, err := chain.DialClient(ctx, c.Chain, deployment)
+	if err != nil {
+		db.Close()
+		panic(err)
+	}
 	return &ServiceContext{
 		Config:     c,
 		DB:         db,
-		Chain:      chain.NewClient(c.Chain, deployment),
+		Chain:      chainClient,
 		Model:      model.New(db),
 		Deployment: deployment,
 	}

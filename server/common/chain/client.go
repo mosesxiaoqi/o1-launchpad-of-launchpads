@@ -1,6 +1,7 @@
 package chain
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -8,6 +9,8 @@ import (
 	"time"
 
 	commonconfig "o1-launchpad/common/config"
+
+	"github.com/ethereum/go-ethereum/ethclient"
 )
 
 type Deployment struct {
@@ -29,6 +32,17 @@ type Client struct {
 	Chain      commonconfig.Chain
 	Deployment Deployment
 	Timeout    time.Duration
+	RPC        *ethclient.Client
+}
+
+func DialClient(ctx context.Context, config commonconfig.Chain, deployment Deployment) (*Client, error) {
+	rpc, err := ethclient.DialContext(ctx, config.HttpRpc)
+	if err != nil {
+		return nil, err
+	}
+	client := NewClient(config, deployment)
+	client.RPC = rpc
+	return client, nil
 }
 
 func LoadDeployment(path string, chainID int64) (Deployment, error) {

@@ -581,23 +581,23 @@ ApplyLaunchEvent 必须在同一数据库事务中插入事件、更新交易并
 - GET /v1/launchpads
 - GET /v1/launchpads/{slug}/tokens
 
-- [ ] **步骤 1：写签名过期、Domain/Chain/Address 错误和重放失败测试**
+- [x] **步骤 1：写签名过期、Domain/Chain/Address 错误和重放失败测试**
 
 EIP-191 消息包含 Domain、URI、chainId=84532、Address、随机 Nonce、签发时间和 5 分钟有效期。
 
-- [ ] **步骤 2：在 RPC Logic 实现认证**
+- [x] **步骤 2：在 RPC Logic 实现认证**
 
 Gateway Handler 只绑定 Request；Gateway Logic 调用 zRPC。RPC Logic 通过 svcCtx.AuthNonceModel 保存 Nonce Hash并原子消费。验证成功后 Gateway 使用 RPC 返回的 Session Claims 签发 HttpOnly、Secure、SameSite=Lax Cookie。不引入额外认证框架。
 
-- [ ] **步骤 3：写 Registry Receipt 验证失败测试**
+- [x] **步骤 3：写 Registry Receipt 验证失败测试**
 
 拒绝回滚交易、错误 Registry、slug 事件不匹配、Owner 不匹配、错误链和不足 2 个确认。
 
-- [ ] **步骤 4：在 RPC Logic 实现品牌校验和保存**
+- [x] **步骤 4：在 RPC Logic 实现品牌校验和保存**
 
 Name 1–80 字符，Description 不超过 1000 UTF-8 bytes，Logo 必须 HTTPS，颜色必须 #RRGGBB，slug 规则与合约一致。仅在一个匹配的 LaunchpadCreated 事件属于登录钱包时保存。
 
-- [ ] **步骤 5：运行并提交**
+- [x] **步骤 5：运行并提交**
 
 执行：cd server && go test ./service/launchpad/api/... ./service/launchpad/rpc/... ./common/chain/... -count=1
 

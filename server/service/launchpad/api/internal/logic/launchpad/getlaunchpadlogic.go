@@ -5,6 +5,7 @@ import (
 
 	"o1-launchpad/service/launchpad/api/internal/svc"
 	"o1-launchpad/service/launchpad/api/internal/types"
+	"o1-launchpad/service/launchpad/rpc/launchpadclient"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -24,7 +25,10 @@ func NewGetLaunchpadLogic(ctx context.Context, svcCtx *svc.ServiceContext) *GetL
 }
 
 func (l *GetLaunchpadLogic) GetLaunchpad(req *types.LaunchpadPath) (resp *types.LaunchpadInfo, err error) {
-	// todo: add your logic here and delete this line
-
-	return
+	item, err := l.svcCtx.Launchpad.GetLaunchpad(l.ctx, &launchpadclient.GetLaunchpadRequest{ChainId: 84532, Slug: req.Slug})
+	if err != nil {
+		return nil, err
+	}
+	mapped := mapLaunchpad(item)
+	return &mapped, nil
 }

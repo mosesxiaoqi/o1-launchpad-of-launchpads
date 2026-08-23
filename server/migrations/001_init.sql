@@ -70,11 +70,20 @@ CREATE TABLE IF NOT EXISTS auth_nonces (
     chain_id bigint NOT NULL,
     wallet bytea NOT NULL,
     nonce_hash bytea NOT NULL UNIQUE,
+    domain text NOT NULL,
+    uri text NOT NULL,
+    nonce text NOT NULL,
     message text NOT NULL,
+    issued_at timestamptz NOT NULL,
     expires_at timestamptz NOT NULL,
     used_at timestamptz,
     created_at timestamptz NOT NULL DEFAULT now()
 );
+
+ALTER TABLE auth_nonces ADD COLUMN IF NOT EXISTS domain text NOT NULL DEFAULT '';
+ALTER TABLE auth_nonces ADD COLUMN IF NOT EXISTS uri text NOT NULL DEFAULT '';
+ALTER TABLE auth_nonces ADD COLUMN IF NOT EXISTS nonce text NOT NULL DEFAULT '';
+ALTER TABLE auth_nonces ADD COLUMN IF NOT EXISTS issued_at timestamptz NOT NULL DEFAULT now();
 
 CREATE INDEX IF NOT EXISTS auth_nonces_wallet_expiry_idx
     ON auth_nonces (chain_id, wallet, expires_at DESC);

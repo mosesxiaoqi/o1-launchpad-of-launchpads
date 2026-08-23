@@ -5,6 +5,7 @@ import (
 
 	"o1-launchpad/service/launchpad/api/internal/svc"
 	"o1-launchpad/service/launchpad/api/internal/types"
+	"o1-launchpad/service/launchpad/rpc/launchpadclient"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -24,7 +25,13 @@ func NewCreateAuthChallengeLogic(ctx context.Context, svcCtx *svc.ServiceContext
 }
 
 func (l *CreateAuthChallengeLogic) CreateAuthChallenge(req *types.CreateAuthChallengeRequest) (resp *types.CreateAuthChallengeResponse, err error) {
-	// todo: add your logic here and delete this line
-
-	return
+	result, err := l.svcCtx.Launchpad.CreateAuthChallenge(l.ctx, &launchpadclient.CreateAuthChallengeRequest{
+		ChainId: req.ChainId, Address: req.Address, Domain: req.Domain, Uri: req.Uri,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &types.CreateAuthChallengeResponse{
+		ChallengeId: result.ChallengeId, Message: result.Message, ExpiresAt: result.ExpiresAt,
+	}, nil
 }

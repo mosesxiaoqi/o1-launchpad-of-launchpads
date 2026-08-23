@@ -51,6 +51,31 @@ func (m *Model) GetLaunchpadBySlug(ctx context.Context, chainID int64, slug stri
 	return launchpad, err
 }
 
+func (m *Model) ListLaunchpads(ctx context.Context, limit int) ([]Launchpad, error) {
+	rows, err := m.db.QueryContext(ctx, `
+		SELECT id, chain_id, launchpad_id, slug, name, description, logo_url, primary_color,
+		       owner, treasury, registry_tx_hash, registry_block_number, active, created_at
+		FROM launchpads ORDER BY created_at DESC, id DESC LIMIT $1`, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var launchpads []Launchpad
+	for rows.Next() {
+		var launchpad Launchpad
+		if err := rows.Scan(
+			&launchpad.ID, &launchpad.ChainID, &launchpad.LaunchpadID, &launchpad.Slug, &launchpad.Name,
+			&launchpad.Description, &launchpad.LogoURL, &launchpad.PrimaryColor, &launchpad.Owner,
+			&launchpad.Treasury, &launchpad.RegistryTxHash, &launchpad.RegistryBlockNumber,
+			&launchpad.Active, &launchpad.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		launchpads = append(launchpads, launchpad)
+	}
+	return launchpads, rows.Err()
+}
+
 func launchpadPrimaryKey(ctx context.Context, tx *sql.Tx, chainID int64, launchpadID []byte) (int64, error) {
 	var id int64
 	err := tx.QueryRowContext(ctx,
