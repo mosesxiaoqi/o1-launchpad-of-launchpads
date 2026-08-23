@@ -1,0 +1,16 @@
+Name: launchpad-indexer
+Mode: dev
+Database:
+  DataSource: ${DATABASE_URL}
+  MaxOpenConns: 10
+  MaxIdleConns: 2
+Chain:
+  ChainId: 84532
+  HttpRpc: ${BASE_SEPOLIA_RPC_URL}
+  WsRpc: ${BASE_SEPOLIA_WS_URL}
+  Confirmations: 2
+DeploymentFile: ../../../deployments/base-sepolia.json
+Indexer:
+  BatchSize: 500
+  PollInterval: 2s
+  ReorgLookback: 64

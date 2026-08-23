@@ -1,0 +1,272 @@
+syntax = "v1"
+
+info (
+	title:   "o1 Launchpad MVP API"
+	desc:    "Base Sepolia launchpad-of-launchpads gateway"
+	version: "1.0"
+)
+
+type HealthResponse {
+	Status string `json:"status"`
+}
+
+type ConfigResponse {
+	ChainId       int64  `json:"chain_id"`
+	Registry      string `json:"registry"`
+	Factory       string `json:"factory"`
+	Hook          string `json:"hook"`
+	FeeEscrow     string `json:"fee_escrow"`
+	Quote         string `json:"quote"`
+	ConfigVersion uint64 `json:"config_version"`
+}
+
+type LaunchpadInfo {
+	Id           string `json:"id"`
+	ChainId      int64  `json:"chain_id"`
+	Slug         string `json:"slug"`
+	Name         string `json:"name"`
+	Description  string `json:"description"`
+	LogoUrl      string `json:"logo_url"`
+	PrimaryColor string `json:"primary_color"`
+	Owner        string `json:"owner"`
+	Treasury     string `json:"treasury"`
+	Active       bool   `json:"active"`
+	CreatedAt    string `json:"created_at"`
+}
+
+type TokenInfo {
+	ChainId       int64  `json:"chain_id"`
+	Token         string `json:"token"`
+	PoolId        string `json:"pool_id"`
+	LaunchpadId   string `json:"launchpad_id"`
+	LaunchpadSlug string `json:"launchpad_slug"`
+	Creator       string `json:"creator"`
+	Quote         string `json:"quote"`
+	Supply        string `json:"supply"`
+	TxHash        string `json:"tx_hash"`
+	BlockNumber   uint64 `json:"block_number"`
+	Status        string `json:"status"`
+	CreatedAt     string `json:"created_at"`
+}
+
+type TransactionInfo {
+	ChainId       int64  `json:"chain_id"`
+	TxHash        string `json:"tx_hash"`
+	Kind          string `json:"kind"`
+	Status        string `json:"status"`
+	BlockNumber   uint64 `json:"block_number"`
+	FailureReason string `json:"failure_reason"`
+	UpdatedAt     string `json:"updated_at"`
+}
+
+type PreparedTransaction {
+	ChainId  int64  `json:"chain_id"`
+	To       string `json:"to"`
+	Data     string `json:"data"`
+	Value    string `json:"value"`
+	Deadline uint64 `json:"deadline"`
+}
+
+type PageRequest {
+	Limit  uint32 `form:"limit,optional"`
+	Cursor string `form:"cursor,optional"`
+}
+
+type ListLaunchpadsResponse {
+	Launchpads []LaunchpadInfo `json:"launchpads"`
+	NextCursor string          `json:"next_cursor"`
+}
+
+type LaunchpadPath {
+	Slug string `path:"slug"`
+}
+
+type ListLaunchpadTokensRequest {
+	Slug   string `path:"slug"`
+	Limit  uint32 `form:"limit,optional"`
+	Cursor string `form:"cursor,optional"`
+}
+
+type ListTokensResponse {
+	Tokens     []TokenInfo `json:"tokens"`
+	NextCursor string      `json:"next_cursor"`
+}
+
+type TokenPath {
+	ChainId      int64  `path:"chain_id"`
+	TokenAddress string `path:"token_address"`
+}
+
+type TransactionPath {
+	ChainId int64  `path:"chain_id"`
+	TxHash  string `path:"tx_hash"`
+}
+
+type CreateLaunchpadRequest {
+	ChainId        int64  `json:"chain_id"`
+	Slug           string `json:"slug"`
+	Name           string `json:"name"`
+	Description    string `json:"description,optional"`
+	LogoUrl        string `json:"logo_url,optional"`
+	PrimaryColor   string `json:"primary_color,optional"`
+	RegistryTxHash string `json:"registry_tx_hash"`
+}
+
+type PrepareLaunchRequest {
+	ChainId     int64  `json:"chain_id"`
+	LaunchpadId string `json:"launchpad_id"`
+	Name        string `json:"name"`
+	Symbol      string `json:"symbol"`
+	ContractUri string `json:"contract_uri,optional"`
+	Salt        string `json:"salt"`
+	Wallet      string `json:"wallet"`
+}
+
+type QuoteSwapRequest {
+	ChainId  int64  `json:"chain_id"`
+	Token    string `json:"token"`
+	Amount   string `json:"amount"`
+	Buy      bool   `json:"buy"`
+	Wallet   string `json:"wallet"`
+	Referrer string `json:"referrer,optional"`
+}
+
+type QuoteSwapResponse {
+	QuoteId   string `json:"quote_id"`
+	AmountIn  string `json:"amount_in"`
+	AmountOut string `json:"amount_out"`
+	Fee       string `json:"fee"`
+	ExpiresAt uint64 `json:"expires_at"`
+}
+
+type PrepareSwapRequest {
+	ChainId     int64  `json:"chain_id"`
+	QuoteId     string `json:"quote_id"`
+	SlippageBps uint32 `json:"slippage_bps"`
+	Wallet      string `json:"wallet"`
+}
+
+type PrepareFeeClaimRequest {
+	ChainId   int64  `json:"chain_id"`
+	Currency  string `json:"currency"`
+	Recipient string `json:"recipient"`
+	Wallet    string `json:"wallet"`
+}
+
+type CreateAuthChallengeRequest {
+	ChainId int64  `json:"chain_id"`
+	Address string `json:"address"`
+	Domain  string `json:"domain"`
+	Uri     string `json:"uri"`
+}
+
+type CreateAuthChallengeResponse {
+	ChallengeId string `json:"challenge_id"`
+	Message     string `json:"message"`
+	ExpiresAt   string `json:"expires_at"`
+}
+
+type VerifyAuthSignatureRequest {
+	ChallengeId string `json:"challenge_id"`
+	Address     string `json:"address"`
+	Signature   string `json:"signature"`
+}
+
+type VerifyAuthSignatureResponse {
+	Address   string `json:"address"`
+	ExpiresAt string `json:"expires_at"`
+}
+
+@server (
+	prefix: /v1
+	group:  system
+)
+service launchpad-api {
+	@handler health
+	get /health returns (HealthResponse)
+
+	@handler getConfig
+	get /config returns (ConfigResponse)
+}
+
+@server (
+	prefix: /v1
+	group:  launchpad
+)
+service launchpad-api {
+	@handler listLaunchpads
+	get /launchpads (PageRequest) returns (ListLaunchpadsResponse)
+
+	@handler createLaunchpad
+	post /launchpads (CreateLaunchpadRequest) returns (LaunchpadInfo)
+
+	@handler getLaunchpad
+	get /launchpads/:slug (LaunchpadPath) returns (LaunchpadInfo)
+
+	@handler listLaunchpadTokens
+	get /launchpads/:slug/tokens (ListLaunchpadTokensRequest) returns (ListTokensResponse)
+}
+
+@server (
+	prefix: /v1
+	group:  token
+)
+service launchpad-api {
+	@handler listTokens
+	get /tokens (PageRequest) returns (ListTokensResponse)
+
+	@handler getToken
+	get /tokens/:chain_id/:token_address (TokenPath) returns (TokenInfo)
+}
+
+@server (
+	prefix: /v1
+	group:  transaction
+)
+service launchpad-api {
+	@handler getTransaction
+	get /transactions/:chain_id/:tx_hash (TransactionPath) returns (TransactionInfo)
+}
+
+@server (
+	prefix: /v1
+	group:  launch
+)
+service launchpad-api {
+	@handler prepareLaunch
+	post /launches/prepare (PrepareLaunchRequest) returns (PreparedTransaction)
+}
+
+@server (
+	prefix: /v1
+	group:  swap
+)
+service launchpad-api {
+	@handler quoteSwap
+	post /swaps/quote (QuoteSwapRequest) returns (QuoteSwapResponse)
+
+	@handler prepareSwap
+	post /swaps/prepare (PrepareSwapRequest) returns (PreparedTransaction)
+}
+
+@server (
+	prefix: /v1
+	group:  fee
+)
+service launchpad-api {
+	@handler prepareFeeClaim
+	post /claims/fees/prepare (PrepareFeeClaimRequest) returns (PreparedTransaction)
+}
+
+@server (
+	prefix: /v1
+	group:  auth
+)
+service launchpad-api {
+	@handler createAuthChallenge
+	post /auth/challenge (CreateAuthChallengeRequest) returns (CreateAuthChallengeResponse)
+
+	@handler verifyAuthSignature
+	post /auth/verify (VerifyAuthSignatureRequest) returns (VerifyAuthSignatureResponse)
+}
+

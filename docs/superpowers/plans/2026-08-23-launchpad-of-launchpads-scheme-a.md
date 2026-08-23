@@ -452,9 +452,9 @@ forge script script/SmokeBaseSepolia.s.sol:SmokeBaseSepolia \
 - RPC 与 Indexer 连接同一个 PostgreSQL；Gateway 不连接 PostgreSQL。
 - 表：launchpads、token_launches、chain_transactions、indexer_checkpoints、auth_nonces
 
-- [ ] **步骤 1：先定义 Proto 并生成 RPC**
+- [x] **步骤 1：先定义 Proto 并生成 RPC**
 
-launchpad.proto 使用 package launchpad、go_package=o1-launchpad/service/launchpad/rpc/pb/launchpad，定义 MVP 所需方法：Health、GetConfig、ListLaunchpads、CreateLaunchpad、GetLaunchpad、ListLaunchpadTokens、ListTokens、GetToken、GetTransaction、PrepareLaunch、QuoteSwap、PrepareSwap、PrepareFeeClaim、CreateAuthChallenge、VerifyAuthSignature。
+launchpad.proto 使用 package launchpad、go_package=./pb/launchpad（确保下述 goctl 命令直接生成到预期目录），定义 MVP 所需方法：Health、GetConfig、ListLaunchpads、CreateLaunchpad、GetLaunchpad、ListLaunchpadTokens、ListTokens、GetToken、GetTransaction、PrepareLaunch、QuoteSwap、PrepareSwap、PrepareFeeClaim、CreateAuthChallenge、VerifyAuthSignature。
 
 执行：
 
@@ -463,7 +463,7 @@ cd server/service/launchpad/rpc
 goctl rpc protoc launchpad.proto --go_out=. --go-grpc_out=. --zrpc_out=.
 ~~~
 
-- [ ] **步骤 2：定义 REST DSL 并生成 Gateway**
+- [x] **步骤 2：定义 REST DSL 并生成 Gateway**
 
 先编写 server/service/launchpad/api/launchpad.api，再执行：
 
@@ -474,11 +474,11 @@ goctl api go -api launchpad.api -dir .
 
 Indexer 按 go-zero Service 约定手工建立 indexer.go、etc、internal/config、internal/logic、internal/svc；它不对外提供接口，也不调用 Gateway/RPC，因此不生成 HTTP 或 gRPC Server。
 
-- [ ] **步骤 3：编写 Migration**
+- [x] **步骤 3：编写 Migration**
 
 地址和哈希使用 bytea，原始金额使用 numeric(78,0)，时间使用 timestamptz。建立 chain+slug、chain+launchpadId、chain+token、chain+pool、chain+txHash 唯一约束。
 
-- [ ] **步骤 4：编写三个 YAML 配置**
+- [x] **步骤 4：编写三个 YAML 配置**
 
 API 配置：
 
@@ -534,15 +534,15 @@ Indexer:
   ReorgLookback: 64
 ~~~
 
-- [ ] **步骤 5：写 Config 加载失败测试**
+- [x] **步骤 5：写 Config 加载失败测试**
 
 使用 conf.MustLoad(path,&c,conf.UseEnv())；测试 Gateway 缺少 RPC Endpoint/Session Secret、RPC 缺失 DATABASE_URL/错误 chainId、Indexer Confirmations<1/BatchSize>500 时启动失败。密码和 RPC Key 只通过环境变量展开。
 
-- [ ] **步骤 6：写 Model 集成失败测试**
+- [x] **步骤 6：写 Model 集成失败测试**
 
 覆盖重复归属冲突、事件幂等重放、pending→confirming→confirmed 和孤块数据删除。
 
-- [ ] **步骤 7：确认失败**
+- [x] **步骤 7：确认失败**
 
 ~~~bash
 cd server
@@ -551,11 +551,11 @@ go test ./common/model ./service/launchpad/api/internal/config ./service/launchp
 
 测试使用环境变量 DATABASE_URL 连接现有 Docker PostgreSQL 中的 o1_launchpad_mvp 数据库，不负责启动或重建 PostgreSQL 容器。
 
-- [ ] **步骤 8：实现 Model 与三个 ServiceContext**
+- [x] **步骤 8：实现 Model 与三个 ServiceContext**
 
 ApplyLaunchEvent 必须在同一数据库事务中插入事件、更新交易并推进 Checkpoint。若唯一键冲突但不可变归属字段不一致，返回错误而不是覆盖。Gateway ServiceContext 只创建 launchpadclient.Launchpad；RPC ServiceContext 创建数据库、链上 Client、Deployment 和 Model；Indexer ServiceContext 创建独立数据库/RPC Client。Handler/Logic 禁止自行连接数据库。
 
-- [ ] **步骤 9：运行并提交**
+- [x] **步骤 9：运行并提交**
 
 提交信息：feat: add launchpad persistence model
 

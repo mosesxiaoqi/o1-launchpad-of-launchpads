@@ -1,0 +1,10 @@
+Name: launchpad-api
+Host: 0.0.0.0
+Port: 8888
+Mode: dev
+LaunchpadRpc:
+  Endpoints:
+    - 127.0.0.1:8080
+Auth:
+  SessionSecret: ${SESSION_SECRET}
+  ChallengeTTLSeconds: 300

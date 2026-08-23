@@ -1,0 +1,13 @@
+Name: launchpad-rpc
+ListenOn: 0.0.0.0:8080
+Mode: dev
+Database:
+  DataSource: ${DATABASE_URL}
+  MaxOpenConns: 20
+  MaxIdleConns: 5
+Chain:
+  ChainId: 84532
+  HttpRpc: ${BASE_SEPOLIA_RPC_URL}
+  WsRpc: ${BASE_SEPOLIA_WS_URL}
+  Confirmations: 2
+DeploymentFile: ../../../../deployments/base-sepolia.json

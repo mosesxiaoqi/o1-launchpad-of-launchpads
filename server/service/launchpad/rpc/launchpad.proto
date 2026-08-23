@@ -1,0 +1,207 @@
+syntax = "proto3";
+
+package launchpad;
+
+option go_package = "./pb/launchpad";
+
+message Empty {}
+
+message HealthResponse {
+  string status = 1;
+}
+
+message GetConfigResponse {
+  int64 chain_id = 1;
+  string registry = 2;
+  string factory = 3;
+  string hook = 4;
+  string fee_escrow = 5;
+  string quote = 6;
+  uint64 config_version = 7;
+}
+
+message PageRequest {
+  uint32 limit = 1;
+  string cursor = 2;
+}
+
+message LaunchpadInfo {
+  string id = 1;
+  int64 chain_id = 2;
+  string slug = 3;
+  string name = 4;
+  string description = 5;
+  string logo_url = 6;
+  string primary_color = 7;
+  string owner = 8;
+  string treasury = 9;
+  bool active = 10;
+  string created_at = 11;
+}
+
+message ListLaunchpadsResponse {
+  repeated LaunchpadInfo launchpads = 1;
+  string next_cursor = 2;
+}
+
+message CreateLaunchpadRequest {
+  int64 chain_id = 1;
+  string slug = 2;
+  string name = 3;
+  string description = 4;
+  string logo_url = 5;
+  string primary_color = 6;
+  string registry_tx_hash = 7;
+  string wallet = 8;
+}
+
+message GetLaunchpadRequest {
+  int64 chain_id = 1;
+  string slug = 2;
+}
+
+message ListLaunchpadTokensRequest {
+  int64 chain_id = 1;
+  string slug = 2;
+  uint32 limit = 3;
+  string cursor = 4;
+}
+
+message Token {
+  int64 chain_id = 1;
+  string token = 2;
+  string pool_id = 3;
+  string launchpad_id = 4;
+  string launchpad_slug = 5;
+  string creator = 6;
+  string quote = 7;
+  string supply = 8;
+  string tx_hash = 9;
+  uint64 block_number = 10;
+  string status = 11;
+  string created_at = 12;
+}
+
+message ListTokensRequest {
+  int64 chain_id = 1;
+  uint32 limit = 2;
+  string cursor = 3;
+}
+
+message ListTokensResponse {
+  repeated Token tokens = 1;
+  string next_cursor = 2;
+}
+
+message GetTokenRequest {
+  int64 chain_id = 1;
+  string token = 2;
+}
+
+message GetTransactionRequest {
+  int64 chain_id = 1;
+  string tx_hash = 2;
+}
+
+message Transaction {
+  int64 chain_id = 1;
+  string tx_hash = 2;
+  string kind = 3;
+  string status = 4;
+  uint64 block_number = 5;
+  string failure_reason = 6;
+  string updated_at = 7;
+}
+
+message PrepareLaunchRequest {
+  int64 chain_id = 1;
+  string launchpad_id = 2;
+  string name = 3;
+  string symbol = 4;
+  string contract_uri = 5;
+  string salt = 6;
+  string wallet = 7;
+}
+
+message PreparedTransaction {
+  int64 chain_id = 1;
+  string to = 2;
+  string data = 3;
+  string value = 4;
+  uint64 deadline = 5;
+}
+
+message QuoteSwapRequest {
+  int64 chain_id = 1;
+  string token = 2;
+  string amount = 3;
+  bool buy = 4;
+  string wallet = 5;
+  string referrer = 6;
+}
+
+message QuoteSwapResponse {
+  string quote_id = 1;
+  string amount_in = 2;
+  string amount_out = 3;
+  string fee = 4;
+  uint64 expires_at = 5;
+}
+
+message PrepareSwapRequest {
+  int64 chain_id = 1;
+  string quote_id = 2;
+  uint32 slippage_bps = 3;
+  string wallet = 4;
+}
+
+message PrepareFeeClaimRequest {
+  int64 chain_id = 1;
+  string currency = 2;
+  string recipient = 3;
+  string wallet = 4;
+}
+
+message CreateAuthChallengeRequest {
+  int64 chain_id = 1;
+  string address = 2;
+  string domain = 3;
+  string uri = 4;
+}
+
+message CreateAuthChallengeResponse {
+  string challenge_id = 1;
+  string message = 2;
+  string expires_at = 3;
+}
+
+message VerifyAuthSignatureRequest {
+  string challenge_id = 1;
+  string address = 2;
+  string signature = 3;
+}
+
+message VerifyAuthSignatureResponse {
+  string session_subject = 1;
+  int64 chain_id = 2;
+  string address = 3;
+  string expires_at = 4;
+}
+
+service Launchpad {
+  rpc Health(Empty) returns (HealthResponse);
+  rpc GetConfig(Empty) returns (GetConfigResponse);
+  rpc ListLaunchpads(PageRequest) returns (ListLaunchpadsResponse);
+  rpc CreateLaunchpad(CreateLaunchpadRequest) returns (LaunchpadInfo);
+  rpc GetLaunchpad(GetLaunchpadRequest) returns (LaunchpadInfo);
+  rpc ListLaunchpadTokens(ListLaunchpadTokensRequest) returns (ListTokensResponse);
+  rpc ListTokens(ListTokensRequest) returns (ListTokensResponse);
+  rpc GetToken(GetTokenRequest) returns (Token);
+  rpc GetTransaction(GetTransactionRequest) returns (Transaction);
+  rpc PrepareLaunch(PrepareLaunchRequest) returns (PreparedTransaction);
+  rpc QuoteSwap(QuoteSwapRequest) returns (QuoteSwapResponse);
+  rpc PrepareSwap(PrepareSwapRequest) returns (PreparedTransaction);
+  rpc PrepareFeeClaim(PrepareFeeClaimRequest) returns (PreparedTransaction);
+  rpc CreateAuthChallenge(CreateAuthChallengeRequest) returns (CreateAuthChallengeResponse);
+  rpc VerifyAuthSignature(VerifyAuthSignatureRequest) returns (VerifyAuthSignatureResponse);
+}
