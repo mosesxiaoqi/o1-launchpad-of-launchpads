@@ -25,6 +25,7 @@ type Deployment struct {
 	Hook            string `json:"hook"`
 	FeeEscrow       string `json:"feeEscrow"`
 	Quote           string `json:"quote"`
+	LaaSTreasury    string `json:"laasTreasury"`
 	DeploymentBlock uint64 `json:"deploymentBlock"`
 	TickSpacing     int64  `json:"tickSpacing"`
 }

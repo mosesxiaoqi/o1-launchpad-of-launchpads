@@ -32,5 +32,6 @@ func (l *GetConfigLogic) GetConfig() (resp *types.ConfigResponse, err error) {
 	return &types.ConfigResponse{
 		ChainId: result.ChainId, Registry: result.Registry, Factory: result.Factory, Hook: result.Hook,
 		FeeEscrow: result.FeeEscrow, Quote: result.Quote, ConfigVersion: result.ConfigVersion,
+		LaaSTreasury: result.LaasTreasury,
 	}, nil
 }

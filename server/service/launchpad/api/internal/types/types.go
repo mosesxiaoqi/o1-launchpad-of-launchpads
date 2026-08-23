@@ -9,6 +9,7 @@ type ConfigResponse struct {
 	FeeEscrow     string `json:"fee_escrow"`
 	Quote         string `json:"quote"`
 	ConfigVersion uint64 `json:"config_version"`
+	LaaSTreasury  string `json:"laas_treasury"`
 }
 
 type CreateAuthChallengeRequest struct {

@@ -46,6 +46,7 @@ export type Config = {
   hook: `0x${string}`
   fee_escrow: `0x${string}`
   quote: `0x${string}`
+  laas_treasury: `0x${string}`
   config_version: number
 }
 
@@ -114,6 +115,8 @@ export const launchpadApi = {
       `/v1/launchpads?limit=25&cursor=${encodeURIComponent(cursor)}`,
     ),
   getLaunchpad: (slug: string) => api<Launchpad>(`/v1/launchpads/${encodeURIComponent(slug)}`),
+  getToken: (address: string) =>
+    api<Token>(`/v1/tokens/84532/${encodeURIComponent(address)}`),
   listLaunchpadTokens: (slug: string, cursor = '') =>
     api<{ tokens: Token[]; next_cursor: string }>(
       `/v1/launchpads/${encodeURIComponent(slug)}/tokens?limit=25&cursor=${encodeURIComponent(cursor)}`,
@@ -139,17 +142,24 @@ export const launchpadApi = {
     post<PreparedTransaction>('/v1/launches/prepare', body),
   transaction: (chainId: number, hash: string) =>
     api<ChainTransaction>(`/v1/transactions/${chainId}/${encodeURIComponent(hash)}`),
-  quoteSwap: (body: Record<string, unknown>) =>
+  quoteSwap: (body: {
+    chain_id: number
+    token: string
+    amount: string
+    buy: boolean
+    wallet: string
+    referrer?: string
+  }) =>
     post<{ quote_id: string; amount_in: string; amount_out: string; fee: string; expires_at: number }>(
       '/v1/swaps/quote',
       body,
     ),
-  prepareSwap: (body: Record<string, unknown>) =>
+  prepareSwap: (body: { chain_id: number; quote_id: string; slippage_bps: number; wallet: string }) =>
     post<PreparedTransaction>('/v1/swaps/prepare', body),
   fees: (recipient: string, currency: string) =>
-    api<{ amount: string; block_number: number }>(
+    api<{ chain_id: number; recipient: string; currency: string; amount: string; block_number: number }>(
       `/v1/fees/${encodeURIComponent(recipient)}?currency=${encodeURIComponent(currency)}`,
     ),
-  prepareFeeClaim: (body: Record<string, unknown>) =>
+  prepareFeeClaim: (body: { chain_id: number; currency: string; recipient: string; wallet: string }) =>
     post<PreparedTransaction>('/v1/claims/fees/prepare', body),
 }

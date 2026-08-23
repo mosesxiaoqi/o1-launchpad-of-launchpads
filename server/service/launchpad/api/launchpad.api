@@ -9,7 +9,6 @@ info (
 type HealthResponse {
 	Status string `json:"status"`
 }
-
 type ConfigResponse {
 	ChainId       int64  `json:"chain_id"`
 	Registry      string `json:"registry"`
@@ -18,6 +17,7 @@ type ConfigResponse {
 	FeeEscrow     string `json:"fee_escrow"`
 	Quote         string `json:"quote"`
 	ConfigVersion uint64 `json:"config_version"`
+	LaaSTreasury  string `json:"laas_treasury"`
 }
 
 type LaunchpadInfo {

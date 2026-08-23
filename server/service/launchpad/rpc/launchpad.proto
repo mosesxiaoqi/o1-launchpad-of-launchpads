@@ -18,6 +18,7 @@ message GetConfigResponse {
   string fee_escrow = 5;
   string quote = 6;
   uint64 config_version = 7;
+  string laas_treasury = 8;
 }
 
 message PageRequest {

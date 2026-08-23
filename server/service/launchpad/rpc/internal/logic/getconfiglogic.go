@@ -27,6 +27,7 @@ func (l *GetConfigLogic) GetConfig(in *launchpad.Empty) (*launchpad.GetConfigRes
 	deployment := l.svcCtx.Deployment
 	return &launchpad.GetConfigResponse{
 		ChainId: deployment.ChainID, Registry: deployment.Registry, Factory: deployment.Factory,
-		Hook: deployment.Hook, FeeEscrow: deployment.FeeEscrow, Quote: deployment.Quote, ConfigVersion: 1,
+		Hook: deployment.Hook, FeeEscrow: deployment.FeeEscrow, Quote: deployment.Quote,
+		ConfigVersion: 1, LaasTreasury: deployment.LaaSTreasury,
 	}, nil
 }

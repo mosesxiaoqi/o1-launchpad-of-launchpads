@@ -787,19 +787,19 @@ MVP Treasury 默认使用连接钱包。分别展示 waiting for wallet、confir
 - 通过 /v1/claims/fees/prepare 获取未签名 Escrow Claim 交易。
 - 仅提供 exact-input 买卖。
 
-- [ ] **步骤 1：写费用展示与 Claim 失败测试**
+- [x] **步骤 1：写费用展示与 Claim 失败测试**
 
 Creator、Protocol、Referrer、LaaS 分开展示；余额为 0 时禁用；Claim Receipt 成功后刷新。
 
-- [ ] **步骤 2：写 Swap 安全失败测试**
+- [x] **步骤 2：写 Swap 安全失败测试**
 
 拒绝零金额、余额不足、Quote 过期和错误链；签名前展示 Price Impact、Slippage、Fee、anti-snipe、Deadline；不提供 exact-output。
 
-- [ ] **步骤 3：实现 o1 风格 Quote/Prepare/广播路径**
+- [x] **步骤 3：实现 o1 风格 Quote/Prepare/广播路径**
 
 前端先调用本地 /v1/swaps/quote，再把 quote_id 交给 /v1/swaps/prepare，最后将返回的 to、data、value 原样交给钱包。RPC 使用准确 PoolKey、官方 Base Sepolia Quoter/Router/Permit2 构造并模拟交易；本地服务不签名、不广播，也不调用 o1 生产 API。
 
-- [ ] **步骤 4：运行并提交**
+- [x] **步骤 4：运行并提交**
 
 执行：cd web && npm test -- --run && npm run build
 
