@@ -221,7 +221,7 @@ ID 使用 keccak256(abi.encode(block.chainid, normalizedSlug))。slug 仅允许 
 - FeeEscrow 提供 owed、credit、claim、claimTo。
 - 只有构造时绑定的 Hook 可以 credit。
 
-- [ ] **步骤 1：写 LaunchToken 失败测试**
+- [x] **步骤 1：写 LaunchToken 失败测试**
 
 ~~~solidity
 function testMintsCompleteSupplyOnce() public {
@@ -233,11 +233,11 @@ function testMintsCompleteSupplyOnce() public {
 }
 ~~~
 
-- [ ] **步骤 2：用 OpenZeppelin ERC20 实现一次性构造铸造**
+- [x] **步骤 2：用 OpenZeppelin ERC20 实现一次性构造铸造**
 
 提供 contractURI，但不提供 mint、burn、pause、owner、role 或 metadata 修改接口。
 
-- [ ] **步骤 3：写 FeeEscrow 失败测试**
+- [x] **步骤 3：写 FeeEscrow 失败测试**
 
 ~~~solidity
 function testClaimPaysAndClears() public {
@@ -250,15 +250,15 @@ function testClaimPaysAndClears() public {
 }
 ~~~
 
-- [ ] **步骤 4：移植 o1 Escrow 语义**
+- [x] **步骤 4：移植 o1 Escrow 语义**
 
 使用 SafeERC20、ReentrancyGuard、CEI 和 custom error；拒绝零地址、零金额和超过实际余额的记账。
 
-- [ ] **步骤 5：增加 Fuzz 与恶意 Token 重入测试**
+- [x] **步骤 5：增加 Fuzz 与恶意 Token 重入测试**
 
 验证已支付金额加未领取余额永不超过实际收到金额，Claim 不会重复支付。
 
-- [ ] **步骤 6：运行并提交**
+- [x] **步骤 6：运行并提交**
 
 ~~~bash
 cd contracts
