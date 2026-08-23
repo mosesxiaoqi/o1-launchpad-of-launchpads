@@ -6,9 +6,14 @@
   "stateView": "0x571291b572ed32ce6751a2cb2486ebee8defb9b4",
   "quoter": "0x4a6513c898fe1b2d0e78d3b0e0a4a151589b1cba",
   "permit2": "0x000000000022D473030F116dDEE9F6B43aC78BA3",
+  "hookDeployer": null,
   "registry": null,
   "factory": null,
   "hook": null,
   "feeEscrow": null,
+  "quote": null,
+  "laasTreasury": null,
+  "startTickToken0Frame": null,
+  "tickSpacing": 60,
   "deploymentBlock": null
 }

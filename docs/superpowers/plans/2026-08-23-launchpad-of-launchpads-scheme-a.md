@@ -392,13 +392,13 @@ forge test --fuzz-runs 1000
 - Hook 地址必须满足 Uniswap v4 permission bits。
 - Escrow 绑定的 Hook、Hook 绑定的 Factory、Factory 引用的 Registry/Hook/PoolManager 必须一致。
 
-- [ ] **步骤 1：写部署 Wiring 失败测试**
+- [x] **步骤 1：写部署 Wiring 失败测试**
 
-- [ ] **步骤 2：实现 CREATE2 部署**
+- [x] **步骤 2：实现 CREATE2 部署**
 
 寻找合法 Hook salt，预测 Hook 地址；先使用预测地址部署 Escrow，再通过 CREATE2 部署 Hook，然后部署 Registry 和 Factory，最后一次性绑定 Factory。任何预测不一致立即回滚。
 
-- [ ] **步骤 3：本地验证**
+- [x] **步骤 3：本地验证**
 
 执行：cd contracts && forge test --match-path test/DeploymentWiring.t.sol -vv
 
