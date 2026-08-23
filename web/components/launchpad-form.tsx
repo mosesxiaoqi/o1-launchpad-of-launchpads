@@ -84,7 +84,7 @@ export function LaunchpadForm() {
       const challenge = await launchpadApi.createChallenge({
         chain_id: chain.id,
         address,
-        domain: window.location.host,
+        domain: window.location.hostname,
         uri: window.location.origin,
       })
       const signature = await signMessageAsync({ message: challenge.message })

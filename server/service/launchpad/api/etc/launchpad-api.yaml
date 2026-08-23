@@ -8,3 +8,4 @@ LaunchpadRpc:
 Auth:
   SessionSecret: ${SESSION_SECRET}
   ChallengeTTLSeconds: 300
+  AllowedOrigin: ${FRONTEND_ORIGIN}

@@ -27,7 +27,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	server := rest.MustNewServer(c.RestConf)
+	server := rest.MustNewServer(c.RestConf, rest.WithCors(c.Auth.AllowedOrigin))
 	defer server.Stop()
 	httpx.SetErrorHandlerCtx(func(_ context.Context, err error) (int, any) {
 		code, body := problem.From(err)

@@ -223,14 +223,21 @@ service launchpad-api {
 	@handler listLaunchpads
 	get /launchpads (PageRequest) returns (ListLaunchpadsResponse)
 
-	@handler createLaunchpad
-	post /launchpads (CreateLaunchpadRequest) returns (LaunchpadInfo)
-
 	@handler getLaunchpad
 	get /launchpads/:slug (LaunchpadPath) returns (LaunchpadInfo)
 
 	@handler listLaunchpadTokens
 	get /launchpads/:slug/tokens (ListLaunchpadTokensRequest) returns (ListTokensResponse)
+}
+
+@server (
+	prefix:     /v1
+	group:      launchpad
+	middleware: Session
+)
+service launchpad-api {
+	@handler createLaunchpad
+	post /launchpads (CreateLaunchpadRequest) returns (LaunchpadInfo)
 }
 
 @server (

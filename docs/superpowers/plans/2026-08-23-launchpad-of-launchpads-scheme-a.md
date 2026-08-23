@@ -819,19 +819,19 @@ Creator、Protocol、Referrer、LaaS 分开展示；余额为 0 时禁用；Clai
 - 提供 make test、make dev、make smoke。
 - 输出可通过区块浏览器复核的完整 Demo 证据。
 
-- [ ] **步骤 1：增加 Playwright 本地 Happy Path**
+- [x] **步骤 1：增加 Playwright 本地 Happy Path**
 
 完成钱包认证、创建 Launchpad、保存品牌、发行 Token、Receipt-first 展示、事件索引和正确 Tenant 列表展示。
 
-- [ ] **步骤 2：增加真实 Base Sepolia Smoke**
+- [x] **步骤 2：增加真实 Base Sepolia Smoke**
 
 预检 Chain/Deployment，创建 Launchpad、发行 Token、执行 exact-input Swap、验证四类费用、Claim 一笔余额、查询 API 归属。任何地址或 Chain 不匹配立即停止。
 
-- [ ] **步骤 3：编写部署与恢复手册**
+- [x] **步骤 3：编写部署与恢复手册**
 
 包含 Migration、部署顺序、Hook Salt 校验、API/Indexer 启动、前端部署、浏览器链接、Indexer 回退和密钥轮换。
 
-- [ ] **步骤 4：执行完整本地验证**
+- [x] **步骤 4：执行完整本地验证**
 
 执行：make test
 
@@ -843,7 +843,7 @@ Creator、Protocol、Referrer、LaaS 分开展示；余额为 0 时禁用；Clai
 
 记录 Registry Tx、Launch Tx、Pool ID、Swap Tx、费用合计、Claim Tx 和 API 中正确的 launchpadId 绑定。
 
-- [ ] **步骤 6：提交**
+- [x] **步骤 6：提交**
 
 提交信息：test: verify Base Sepolia MVP end to end
 

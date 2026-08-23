@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"net"
 	"net/url"
 	"strings"
 	"time"
@@ -34,8 +35,8 @@ func NewChallenge(
 	ttl time.Duration,
 ) (Challenge, error) {
 	parsed, err := url.Parse(uri)
-	if err != nil || parsed.Scheme != "https" || !strings.EqualFold(parsed.Hostname(), domain) {
-		return Challenge{}, errors.New("domain and HTTPS URI do not match")
+	if err != nil || !validChallengeScheme(parsed) || !strings.EqualFold(parsed.Hostname(), domain) {
+		return Challenge{}, errors.New("domain and secure URI do not match")
 	}
 	if chainID != 84532 {
 		return Challenge{}, errors.New("chain must be Base Sepolia")
@@ -53,6 +54,17 @@ func NewChallenge(
 	}
 	challenge.Message = challenge.render()
 	return challenge, nil
+}
+
+func validChallengeScheme(parsed *url.URL) bool {
+	if parsed.Scheme == "https" {
+		return true
+	}
+	if parsed.Scheme != "http" {
+		return false
+	}
+	host := parsed.Hostname()
+	return strings.EqualFold(host, "localhost") || net.ParseIP(host).IsLoopback()
 }
 
 func PersonalSignHash(message string) []byte {

@@ -69,11 +69,6 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 				Handler: launchpad.ListLaunchpadsHandler(serverCtx),
 			},
 			{
-				Method:  http.MethodPost,
-				Path:    "/launchpads",
-				Handler: launchpad.CreateLaunchpadHandler(serverCtx),
-			},
-			{
 				Method:  http.MethodGet,
 				Path:    "/launchpads/:slug",
 				Handler: launchpad.GetLaunchpadHandler(serverCtx),
@@ -84,6 +79,20 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 				Handler: launchpad.ListLaunchpadTokensHandler(serverCtx),
 			},
 		},
+		rest.WithPrefix("/v1"),
+	)
+
+	server.AddRoutes(
+		rest.WithMiddlewares(
+			[]rest.Middleware{serverCtx.Session},
+			[]rest.Route{
+				{
+					Method:  http.MethodPost,
+					Path:    "/launchpads",
+					Handler: launchpad.CreateLaunchpadHandler(serverCtx),
+				},
+			}...,
+		),
 		rest.WithPrefix("/v1"),
 	)
 

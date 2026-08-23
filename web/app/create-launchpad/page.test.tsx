@@ -119,6 +119,10 @@ describe('create launchpad page', () => {
     fillValidForm()
     fireEvent.click(screen.getByRole('button', { name: '创建 Launchpad' }))
     await waitFor(() => expect(mocks.push).toHaveBeenCalledWith('/launchpad/my-pad'))
+    expect(mocks.createChallenge).toHaveBeenCalledWith(expect.objectContaining({
+      domain: window.location.hostname,
+      uri: window.location.origin,
+    }))
     expect(mocks.signMessageAsync).toHaveBeenCalledWith({ message: 'Sign me' })
     expect(mocks.writeContractAsync).toHaveBeenCalledWith(
       expect.objectContaining({ functionName: 'createLaunchpad' }),

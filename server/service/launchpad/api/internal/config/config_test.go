@@ -9,8 +9,10 @@ import (
 
 func TestValidateRejectsMissingRPCOrSessionSecret(t *testing.T) {
 	tests := []Config{
-		{LaunchpadRpc: zrpc.RpcClientConf{Endpoints: nil}, Auth: Auth{SessionSecret: "secret"}},
+		{LaunchpadRpc: zrpc.RpcClientConf{Endpoints: nil}, Auth: Auth{SessionSecret: "secret", AllowedOrigin: "http://localhost:3000"}},
 		{LaunchpadRpc: zrpc.RpcClientConf{Endpoints: []string{"127.0.0.1:8080"}}, Auth: Auth{}},
+		{LaunchpadRpc: zrpc.RpcClientConf{Endpoints: []string{"127.0.0.1:8080"}}, Auth: Auth{SessionSecret: "secret", ChallengeTTLSeconds: 300}},
+		{LaunchpadRpc: zrpc.RpcClientConf{Endpoints: []string{"127.0.0.1:8080"}}, Auth: Auth{SessionSecret: "secret", ChallengeTTLSeconds: 300, AllowedOrigin: "http://demo.example"}},
 	}
 	for _, cfg := range tests {
 		if err := cfg.Validate(); err == nil {
@@ -21,6 +23,7 @@ func TestValidateRejectsMissingRPCOrSessionSecret(t *testing.T) {
 
 func TestLoadExpandsSessionSecret(t *testing.T) {
 	t.Setenv("SESSION_SECRET", "test-session-secret")
+	t.Setenv("FRONTEND_ORIGIN", "http://localhost:3000")
 	var cfg Config
 	if err := conf.Load("../../etc/launchpad-api.yaml", &cfg, conf.UseEnv()); err != nil {
 		t.Fatal(err)
@@ -28,14 +31,28 @@ func TestLoadExpandsSessionSecret(t *testing.T) {
 	if cfg.Auth.SessionSecret != "test-session-secret" {
 		t.Fatalf("SessionSecret = %q", cfg.Auth.SessionSecret)
 	}
+	if cfg.Auth.AllowedOrigin != "http://localhost:3000" {
+		t.Fatalf("AllowedOrigin = %q", cfg.Auth.AllowedOrigin)
+	}
 }
 
 func TestValidateAcceptsGatewayConfig(t *testing.T) {
 	cfg := Config{
 		LaunchpadRpc: zrpc.RpcClientConf{Endpoints: []string{"127.0.0.1:8080"}},
-		Auth:         Auth{SessionSecret: "secret", ChallengeTTLSeconds: 300},
+		Auth:         Auth{SessionSecret: "secret", ChallengeTTLSeconds: 300, AllowedOrigin: "http://localhost:3000"},
 	}
 	if err := cfg.Validate(); err != nil {
 		t.Fatalf("Validate() error = %v", err)
+	}
+}
+
+func TestAuthChallengeOriginUsesTrustedConfiguration(t *testing.T) {
+	auth := Auth{AllowedOrigin: "https://demo.example:8443"}
+	domain, origin, err := auth.ChallengeOrigin()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if domain != "demo.example" || origin != "https://demo.example:8443" {
+		t.Fatalf("ChallengeOrigin() = %q, %q", domain, origin)
 	}
 }

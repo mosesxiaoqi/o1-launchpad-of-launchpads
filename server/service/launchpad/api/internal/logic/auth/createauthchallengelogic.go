@@ -25,8 +25,12 @@ func NewCreateAuthChallengeLogic(ctx context.Context, svcCtx *svc.ServiceContext
 }
 
 func (l *CreateAuthChallengeLogic) CreateAuthChallenge(req *types.CreateAuthChallengeRequest) (resp *types.CreateAuthChallengeResponse, err error) {
+	domain, origin, err := l.svcCtx.Config.Auth.ChallengeOrigin()
+	if err != nil {
+		return nil, err
+	}
 	result, err := l.svcCtx.Launchpad.CreateAuthChallenge(l.ctx, &launchpadclient.CreateAuthChallengeRequest{
-		ChainId: req.ChainId, Address: req.Address, Domain: req.Domain, Uri: req.Uri,
+		ChainId: req.ChainId, Address: req.Address, Domain: domain, Uri: origin,
 	})
 	if err != nil {
 		return nil, err

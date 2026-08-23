@@ -62,3 +62,15 @@ func TestChallengeMessageBindsRequiredFields(t *testing.T) {
 		}
 	}
 }
+
+func TestChallengeAllowsOnlyLoopbackHTTP(t *testing.T) {
+	key, _ := crypto.GenerateKey()
+	address := crypto.PubkeyToAddress(key.PublicKey)
+	now := time.Unix(1_700_000_000, 0).UTC()
+	if _, err := NewChallenge("localhost", "http://localhost:3000", 84532, address, now, time.Minute); err != nil {
+		t.Fatalf("loopback HTTP should be allowed in local development: %v", err)
+	}
+	if _, err := NewChallenge("demo.example", "http://demo.example", 84532, address, now, time.Minute); err == nil {
+		t.Fatal("non-loopback HTTP must be rejected")
+	}
+}
