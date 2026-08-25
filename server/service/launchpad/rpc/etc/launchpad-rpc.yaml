@@ -1,6 +1,7 @@
 Name: launchpad-rpc
 ListenOn: 0.0.0.0:8080
 Mode: dev
+# Runtime secrets and RPC endpoints are injected from the repository-root .env.
 Database:
   DataSource: ${DATABASE_URL}
   MaxOpenConns: 20
@@ -10,4 +11,5 @@ Chain:
   HttpRpc: ${BASE_SEPOLIA_RPC_URL}
   WsRpc: ${BASE_SEPOLIA_WS_URL}
   Confirmations: 2
+# Registry, Factory, Hook, FeeEscrow and deployment block come from this manifest.
 DeploymentFile: ../../../../deployments/base-sepolia.json

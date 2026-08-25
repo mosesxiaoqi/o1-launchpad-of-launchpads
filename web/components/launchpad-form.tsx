@@ -127,10 +127,12 @@ export function LaunchpadForm() {
     : chainId !== chain.id
       ? '请切换到 Base Sepolia'
       : ''
+  const previewLogo = isHttpsUrl(fields.logoUrl) ? fields.logoUrl : ''
 
   return (
-    <form onSubmit={submit} noValidate>
-      <p>{availability}</p>
+    <form className="stack-form" onSubmit={submit} noValidate>
+      <div className="form-heading"><span>LAUNCHPAD CONFIG</span><strong>品牌与链上身份</strong></div>
+      {availability && <p className="form-notice">{availability}</p>}
       <Field label="Slug" error={fieldErrors.slug}>
         <input ref={firstError === 'slug' ? focusElement : undefined} id="slug" value={fields.slug} onChange={(event) => update('slug', event.target.value)} aria-describedby={fieldErrors.slug ? 'slug-error' : undefined} />
       </Field>
@@ -146,7 +148,11 @@ export function LaunchpadForm() {
       <Field label="主题色" error={fieldErrors.primaryColor}>
         <input ref={firstError === 'primaryColor' ? focusElement : undefined} id="primaryColor" value={fields.primaryColor} onChange={(event) => update('primaryColor', event.target.value)} aria-describedby={fieldErrors.primaryColor ? 'primaryColor-error' : undefined} />
       </Field>
-      <button type="submit" disabled={Boolean(availability) || busy}>创建 Launchpad</button>
+      <div className="brand-preview" style={{ borderColor: fields.primaryColor }}><span style={{ borderColor: fields.primaryColor }}>{previewLogo ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={previewLogo} alt={`${fields.name || 'Launchpad'} Logo 预览`} />
+      ) : (fields.name || 'LP').slice(0, 2).toUpperCase()}</span><div><small>LIVE PREVIEW</small><strong>{fields.name || 'YOUR LAUNCHPAD'}</strong><p>/{normalizePreviewSlug(fields.slug)}</p></div></div>
+      <button className="primary-action" type="submit" disabled={Boolean(availability) || busy}>创建 Launchpad <span aria-hidden="true">↗</span></button>
       <TransactionStatus phase={phase} error={error} />
     </form>
   )
@@ -155,7 +161,7 @@ export function LaunchpadForm() {
 function Field({ label, error, children }: { label: keyof typeof fieldIDs; error?: string; children: ReactNode }) {
   const id = fieldIDs[label]
   return (
-    <div>
+    <div className="form-field">
       <label htmlFor={id}>{label}</label>
       {children}
       {error && <p id={`${id}-error`}>{error}</p>}
@@ -167,4 +173,16 @@ const fieldIDs = { Slug: 'slug', 名称: 'name', 简介: 'description', 'Logo UR
 
 function focusElement(element: HTMLElement | null) {
   element?.focus()
+}
+
+function normalizePreviewSlug(value: string) {
+  return value.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'your-slug'
+}
+
+function isHttpsUrl(value: string) {
+  try {
+    return new URL(value).protocol === 'https:'
+  } catch {
+    return false
+  }
 }

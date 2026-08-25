@@ -85,6 +85,7 @@ describe('token launch form', () => {
 
   it('shows every immutable launch term before wallet signing', async () => {
     render(<TokenLaunchForm launchpad={launchpad} config={config} />)
+    expect(screen.getByText(config.quote)).toBeInTheDocument()
     fillToken()
     fireEvent.click(screen.getByRole('button', { name: '生成发行计划' }))
     expect(await screen.findByText('1,000,000,000')).toBeInTheDocument()
@@ -93,6 +94,15 @@ describe('token launch form', () => {
     }
     expect(screen.getByText(/fixed supply/)).toBeInTheDocument()
     expect(mocks.sendTransactionAsync).not.toHaveBeenCalled()
+  })
+
+  it('preserves the symbol entered by the creator', async () => {
+    render(<TokenLaunchForm launchpad={launchpad} config={config} />)
+    fireEvent.change(screen.getByLabelText('Token 名称'), { target: { value: 'Demo Token' } })
+    fireEvent.change(screen.getByLabelText('Symbol'), { target: { value: 'Demo' } })
+    fireEvent.click(screen.getByRole('button', { name: '生成发行计划' }))
+    await screen.findByRole('heading', { name: '发行确认' })
+    expect(mocks.prepareLaunch).toHaveBeenCalledWith(expect.objectContaining({ symbol: 'Demo' }))
   })
 
   it('broadcasts the prepared transaction unchanged and shows receipt before indexing', async () => {

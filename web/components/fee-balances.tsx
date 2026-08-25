@@ -81,30 +81,25 @@ export function FeeBalances({ token, launchpad, config }: { token: Token; launch
 
   const roles: Role[] = ['Creator', 'Protocol', 'Referrer', 'LaaS']
   return (
-    <section aria-labelledby="fees-title">
-      <h2 id="fees-title">费用余额</h2>
-      <label htmlFor="fee-currency">币种</label>
-      <select id="fee-currency" value={currency} onChange={(event) => setCurrency(event.target.value)}>
-        <option value={token.quote}>Quote</option>
-        <option value={token.token}>Token</option>
-      </select>
-      {roles.map((role) => {
+    <section className="fee-ledger" aria-labelledby="fees-title">
+      <div className="ledger-toolbar"><div><span>AVAILABLE BALANCES</span><h2 id="fees-title">费用余额</h2></div><label htmlFor="fee-currency">币种<select id="fee-currency" value={currency} onChange={(event) => setCurrency(event.target.value)}><option value={token.quote}>Quote</option><option value={token.token}>Token</option></select></label></div>
+      <div className="role-grid">{roles.map((role) => {
         const amount = balances[role]
         const ownsRecipient = Boolean(address && recipient(role).toLowerCase() === address.toLowerCase())
         const canClaim = isConnected && chainId === chain.id && ownsRecipient && BigInt(amount || '0') > 0n && !busy
         return (
-          <article key={role}>
-            <h3>{role}</h3>
-            <p>{recipient(role)}</p>
-            <p data-testid={`fee-${role}`}>{amount}</p>
+          <article className="role-card" key={role}>
+            <div><h3>{role}</h3><span>{ownsRecipient ? 'YOUR ROLE' : 'RECIPIENT'}</span></div>
+            <p className="mono truncate">{recipient(role)}</p>
+            <p className="role-balance" data-testid={`fee-${role}`}>{amount}</p>
             <button type="button" aria-label={`Claim ${role}`} disabled={!canClaim} onClick={() => claim(role)}>
               {busy === role ? '领取中…' : 'Claim'}
             </button>
           </article>
         )
-      })}
-      {status && <p role="status">{status}</p>}
-      {error && <p role="alert">{error}</p>}
+      })}</div>
+      {status && <p className="inline-status" role="status">{status}</p>}
+      {error && <p className="inline-status error" role="alert">{error}</p>}
     </section>
   )
 }

@@ -1,5 +1,6 @@
 Name: launchpad-indexer
 Mode: dev
+# Runtime secrets and RPC endpoints are injected from the repository-root .env.
 Database:
   DataSource: ${DATABASE_URL}
   MaxOpenConns: 10
@@ -9,8 +10,10 @@ Chain:
   HttpRpc: ${BASE_SEPOLIA_RPC_URL}
   WsRpc: ${BASE_SEPOLIA_WS_URL}
   Confirmations: 2
+# The Indexer starts from the Factory and deployment block recorded here.
 DeploymentFile: ../../../deployments/base-sepolia.json
 Indexer:
-  BatchSize: 500
+  # Alchemy Free Tier limits eth_getLogs to a 10-block range.
+  BatchSize: 10
   PollInterval: 2s
   ReorgLookback: 64

@@ -38,7 +38,7 @@ func TestLoadExpandsIndexerEnvironment(t *testing.T) {
 	if err := conf.Load("../../etc/indexer.yaml", &cfg, conf.UseEnv()); err != nil {
 		t.Fatal(err)
 	}
-	if cfg.Database.DataSource != "postgres://indexer-db" || cfg.Indexer.BatchSize != 500 {
+	if cfg.Database.DataSource != "postgres://indexer-db" || cfg.Indexer.BatchSize != 10 {
 		t.Fatalf("unexpected loaded config: %#v", cfg)
 	}
 }

@@ -89,21 +89,30 @@ export function TokenLaunchForm({ launchpad, config }: { launchpad: Launchpad; c
   }
 
   return (
-    <section>
-      <form onSubmit={prepare}>
-        <label htmlFor="token-name">Token 名称</label>
-        <input id="token-name" value={name} onChange={(event) => setName(event.target.value)} />
-        <label htmlFor="token-symbol">Symbol</label>
-        <input id="token-symbol" value={symbol} onChange={(event) => setSymbol(event.target.value)} />
-        <label htmlFor="contract-uri">Contract URI</label>
-        <input id="contract-uri" value={contractURI} onChange={(event) => setContractURI(event.target.value)} />
-        {!plan && <button disabled={!ready || phase === 'preparing'}>生成发行计划</button>}
-      </form>
+    <section className="token-launcher">
+      <div className="form-panel">
+        <form className="stack-form launch-form" onSubmit={prepare}>
+          <div className="form-heading"><span>TOKEN CONFIG</span><strong>资产标识与元数据</strong></div>
+          <div className="form-field"><label htmlFor="token-name">Token 名称</label><input id="token-name" value={name} onChange={(event) => setName(event.target.value)} placeholder="Example Token" /></div>
+          <div className="form-field"><label htmlFor="token-symbol">Symbol</label><input id="token-symbol" value={symbol} onChange={(event) => setSymbol(event.target.value)} placeholder="TOKEN" /></div>
+          <div className="form-field"><label htmlFor="contract-uri">Contract URI</label><input id="contract-uri" value={contractURI} onChange={(event) => setContractURI(event.target.value)} placeholder="ipfs://…" /></div>
+          {!plan && <button className="primary-action" disabled={!ready || phase === 'preparing'}>生成发行计划 <span aria-hidden="true">→</span></button>}
+        </form>
+        {phase === 'preparing' && <p className="inline-status" role="status">正在生成最新发行计划</p>}
+        {phase === 'wallet' && <p className="inline-status" role="status">等待钱包确认交易</p>}
+        {phase === 'receipt' && <p className="inline-status" role="status">等待链上 Receipt</p>}
+        {phase === 'indexing' && <p className="inline-status" role="status">等待索引确认</p>}
+        {phase === 'confirmed' && <p className="inline-status success" role="status">发行已确认</p>}
+        {launched && <p className="mono launched-token">Token：{launched.token}</p>}
+        {error && <p className="inline-status error" role="alert">{error}</p>}
+        {!ready && <p className="form-notice">请连接钱包并切换到 Base Sepolia</p>}
+      </div>
 
-      {plan && (
-        <section aria-labelledby="launch-review-title">
+      {plan ? (
+        <section className="review-card" aria-labelledby="launch-review-title">
+          <p className="panel-label">REVIEW / SIGN</p>
           <h2 id="launch-review-title">发行确认</h2>
-          <dl>
+          <dl className="review-list">
             <dt>固定供应量</dt><dd>1,000,000,000</dd>
             <dt>流动性</dt><dd>永久流动性</dd>
             <dt>协议费</dt><dd>1% 协议费</dd>
@@ -114,23 +123,31 @@ export function TokenLaunchForm({ launchpad, config }: { launchpad: Launchpad; c
             <dt>Launchpad ID</dt><dd>{launchpad.id}</dd>
             <dt>Treasury</dt><dd>{launchpad.treasury}</dd>
           </dl>
-          <p>{plan.review}</p>
-          <button disabled={phase !== 'review'} onClick={broadcast}>确认并签名</button>
+          <p className="review-copy">{plan.review}</p>
+          <button className="primary-action" disabled={phase !== 'review'} onClick={broadcast}>确认并签名</button>
         </section>
+      ) : (
+        <aside className="protocol-brief">
+          <p className="panel-label">IMMUTABLE PARAMETERS</p>
+          <h2>发行前须知</h2>
+          <dl className="brief-list">
+            <div><dt>供应量</dt><dd>1B / FIXED</dd></div>
+            <div><dt>流动性</dt><dd>永久锁定</dd></div>
+            <div><dt>正常费率</dt><dd>1.5%</dd></div>
+            <div><dt>保护期</dt><dd>16 秒</dd></div>
+            <div><dt>Quote</dt><dd>{quoteLabel(config.quote)}</dd></div>
+          </dl>
+          <p>生成计划不会立即广播交易。你仍需在下一步审阅并通过钱包确认。</p>
+        </aside>
       )}
-
-      {phase === 'preparing' && <p role="status">正在生成最新发行计划</p>}
-      {phase === 'wallet' && <p role="status">等待钱包确认交易</p>}
-      {phase === 'receipt' && <p role="status">等待链上 Receipt</p>}
-      {phase === 'indexing' && <p role="status">等待索引确认</p>}
-      {phase === 'confirmed' && <p role="status">发行已确认</p>}
-      {launched && <p>Token：{launched.token}</p>}
-      {error && <p role="alert">{error}</p>}
-      {!ready && <p>请连接钱包并切换到 Base Sepolia</p>}
     </section>
   )
 }
 
 function message(cause: unknown) {
   return cause instanceof Error ? cause.message : 'Token 发行失败'
+}
+
+function quoteLabel(quote: string) {
+  return quote.toLowerCase() === '0x0000000000000000000000000000000000000000' ? 'NATIVE ETH' : quote
 }

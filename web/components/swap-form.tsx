@@ -98,41 +98,41 @@ export function SwapForm({ token }: { token: Token }) {
   }
 
   return (
-    <section aria-labelledby="swap-title">
-      <h2 id="swap-title">Swap（exact-input）</h2>
-      <fieldset>
+    <section className="trade-ticket" aria-labelledby="swap-title">
+      <div className="trade-heading"><div><span>UNISWAP V4</span><h2 id="swap-title">Swap</h2></div><small>EXACT INPUT</small></div>
+      <fieldset className="direction-tabs">
         <legend>方向</legend>
         <label><input type="radio" name="direction" checked={buy} onChange={() => resetDirection(true)} />买入</label>
         <label><input type="radio" name="direction" checked={!buy} onChange={() => resetDirection(false)} />卖出</label>
       </fieldset>
-      <form onSubmit={getQuote}>
+      <form className="swap-input" onSubmit={getQuote}>
         <label htmlFor="swap-amount">输入金额（raw units）</label>
         <input id="swap-amount" inputMode="numeric" value={amount} onChange={(event) => setAmount(event.target.value)} />
-        <button disabled={!ready || pending}>获取 Quote</button>
+        <button className="primary-action" disabled={!ready || pending}>获取 Quote</button>
       </form>
       {quote && (
-        <section aria-labelledby="quote-title">
+        <section className="quote-panel" aria-labelledby="quote-title">
           <h3 id="quote-title">报价</h3>
           <p>预计输出：{quote.amount_out}</p>
           <p>Fee：{quote.fee}</p>
           <p>Price Impact：已包含在 Quoter 输出中</p>
           <p>Quote 有效期：{quote.expires_at}</p>
-          {!plan && <button type="button" disabled={pending} onClick={prepare}>准备交易</button>}
+          {!plan && <button className="secondary-action" type="button" disabled={pending} onClick={prepare}>准备交易</button>}
         </section>
       )}
       {plan && (
-        <section aria-labelledby="swap-review-title">
+        <section className="quote-panel review" aria-labelledby="swap-review-title">
           <h3 id="swap-review-title">签名前确认</h3>
           <p>Slippage：1%</p>
           <p>anti-snipe：16 秒</p>
           <p>Deadline：{plan.deadline}</p>
           <p>{plan.review}</p>
-          <button type="button" disabled={pending} onClick={broadcast}>确认并签名</button>
+          <button className="primary-action" type="button" disabled={pending} onClick={broadcast}>确认并签名</button>
         </section>
       )}
-      {!ready && <p>请连接钱包并切换到 Base Sepolia</p>}
-      {status && <p role="status">{status}</p>}
-      {error && <p role="alert">{error}</p>}
+      {!ready && <p className="form-notice">请连接钱包并切换到 Base Sepolia</p>}
+      {status && <p className="inline-status" role="status">{status}</p>}
+      {error && <p className="inline-status error" role="alert">{error}</p>}
     </section>
   )
 }

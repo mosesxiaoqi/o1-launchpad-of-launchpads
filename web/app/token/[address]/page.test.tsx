@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { FeeBalances } from '@/components/fee-balances'
 import { SwapForm } from '@/components/swap-form'
+import Page from './page'
 
 const mocks = vi.hoisted(() => ({
   wallet: '0x1111111111111111111111111111111111111111' as `0x${string}`,
@@ -14,6 +15,9 @@ const mocks = vi.hoisted(() => ({
   prepareSwap: vi.fn(),
   sendTransactionAsync: vi.fn(),
   waitForTransactionReceipt: vi.fn(),
+  getToken: vi.fn(),
+  getLaunchpad: vi.fn(),
+  config: vi.fn(),
 }))
 const wallet = mocks.wallet
 
@@ -24,9 +28,13 @@ vi.mock('wagmi', () => ({
   useSendTransaction: () => ({ sendTransactionAsync: mocks.sendTransactionAsync }),
   usePublicClient: () => ({ waitForTransactionReceipt: mocks.waitForTransactionReceipt }),
 }))
+vi.mock('@/components/connect-wallet', () => ({ ConnectWallet: () => <button>连接钱包</button> }))
 vi.mock('@/lib/wagmi', () => ({ chain: { id: 84532 } }))
 vi.mock('@/lib/api', () => ({
   launchpadApi: {
+    getToken: mocks.getToken,
+    getLaunchpad: mocks.getLaunchpad,
+    config: mocks.config,
     fees: mocks.fees,
     prepareFeeClaim: mocks.prepareFeeClaim,
     quoteSwap: mocks.quoteSwap,
@@ -73,6 +81,16 @@ const config = {
   laas_treasury: '0xcccccccccccccccccccccccccccccccccccccccc' as `0x${string}`,
   config_version: 1,
 }
+
+describe('token page', () => {
+  it('shows the actual ERC-20 quote address', async () => {
+    mocks.getToken.mockResolvedValue(token)
+    mocks.getLaunchpad.mockResolvedValue(launchpad)
+    mocks.config.mockResolvedValue(config)
+    render(await Page({ params: Promise.resolve({ address: token.token }) } as never))
+    expect(screen.getByText(token.quote)).toBeInTheDocument()
+  })
+})
 
 describe('fees', () => {
   beforeEach(() => {

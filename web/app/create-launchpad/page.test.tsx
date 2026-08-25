@@ -85,6 +85,13 @@ describe('create launchpad page', () => {
     expect(mocks.createChallenge).not.toHaveBeenCalled()
   })
 
+  it('previews a valid logo URL', () => {
+    render(<Page />)
+    fireEvent.change(screen.getByLabelText('名称'), { target: { value: 'My Pad' } })
+    fireEvent.change(screen.getByLabelText('Logo URL'), { target: { value: 'https://example.com/logo.png' } })
+    expect(screen.getByRole('img', { name: 'My Pad Logo 预览' })).toHaveAttribute('src', 'https://example.com/logo.png')
+  })
+
   it('keeps form input when the wallet rejects the signature', async () => {
     mocks.signMessageAsync.mockRejectedValue(new Error('User rejected the request'))
     render(<Page />)

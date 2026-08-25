@@ -6,14 +6,14 @@
   "stateView": "0x571291b572ed32ce6751a2cb2486ebee8defb9b4",
   "quoter": "0x4a6513c898fe1b2d0e78d3b0e0a4a151589b1cba",
   "permit2": "0x000000000022D473030F116dDEE9F6B43aC78BA3",
-  "hookDeployer": null,
-  "registry": null,
-  "factory": null,
-  "hook": null,
-  "feeEscrow": null,
-  "quote": null,
-  "laasTreasury": null,
-  "startTickToken0Frame": null,
+  "hookDeployer": "0x279A729F5bF8bf9A4f11Fb70e4Aa8680EcC0cDcd",
+  "registry": "0xb30fACe38D72cF58459ce9E09548A7dAA023b416",
+  "factory": "0xAe8d11649bb14d38535C7C3AB3C258aFe31a59a4",
+  "hook": "0x974ACffb0Ff8bf906712A515C2Ec2cEd25396acc",
+  "feeEscrow": "0x90EC0EaC5b1B1d05C5577c500Aa79F7228AeBd02",
+  "quote": "0x0000000000000000000000000000000000000000",
+  "laasTreasury": "0xf3CEdf2fC17332796a345DD96cd6E992ac17abe0",
+  "startTickToken0Frame": 0,
   "tickSpacing": 60,
-  "deploymentBlock": null
+  "deploymentBlock": 45937637
 }

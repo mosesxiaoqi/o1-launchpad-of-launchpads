@@ -10,8 +10,8 @@ const labels: Record<Exclude<TransactionPhase, 'idle'>, string> = {
 
 export function TransactionStatus({ phase, error }: { phase: TransactionPhase; error?: string }) {
   if (error) {
-    return <p role="alert" aria-live="assertive">{error}</p>
+    return <p className="inline-status error" role="alert" aria-live="assertive">{error}</p>
   }
   if (phase === 'idle') return null
-  return <p role="status" aria-live="polite">{labels[phase]}</p>
+  return <p className="inline-status" role="status" aria-live="polite"><span />{labels[phase]}</p>
 }
