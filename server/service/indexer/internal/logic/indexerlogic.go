@@ -71,10 +71,18 @@ func (l *IndexerLogic) RunOnce(ctx context.Context) error {
 	}
 	factory := common.HexToAddress(deployment.Factory)
 	factoryBytes := factory.Bytes()
+	latest, err := l.rpc.BlockNumber(ctx)
+	if err != nil {
+		return err
+	}
+	if latest <= config.Chain.Confirmations {
+		return nil
+	}
+	target := latest - config.Chain.Confirmations
 	checkpoint, err := l.model.GetCheckpoint(ctx, config.Chain.ChainId, factoryBytes)
 	if errors.Is(err, sql.ErrNoRows) {
 		checkpoint = model.Checkpoint{
-			ChainID: config.Chain.ChainId, Factory: factoryBytes, NextBlock: deployment.DeploymentBlock,
+			ChainID: config.Chain.ChainId, Factory: factoryBytes, NextBlock: target,
 		}
 	} else if err != nil {
 		return err
@@ -99,14 +107,6 @@ func (l *IndexerLogic) RunOnce(ctx context.Context) error {
 		}
 	}
 
-	latest, err := l.rpc.BlockNumber(ctx)
-	if err != nil {
-		return err
-	}
-	if latest <= config.Chain.Confirmations {
-		return nil
-	}
-	target := latest - config.Chain.Confirmations
 	if checkpoint.NextBlock > target {
 		return nil
 	}

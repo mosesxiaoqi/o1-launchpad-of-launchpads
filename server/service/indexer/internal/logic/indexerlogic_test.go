@@ -58,7 +58,7 @@ func (f *fakeLogClient) FilterLogs(_ context.Context, query ethereum.FilterQuery
 }
 
 func TestRunOnceBoundsBatchAndStopsAtConfirmedHead(t *testing.T) {
-	modelFake := &fakeLaunchModel{}
+	modelFake := &fakeLaunchModel{hasCP: true, checkpoint: model.Checkpoint{NextBlock: 100}}
 	rpc := &fakeLogClient{latest: 1000}
 	logic := newIndexerLogic(indexerServiceContext(), modelFake, rpc)
 	if err := logic.RunOnce(context.Background()); err != nil {
@@ -68,6 +68,21 @@ func TestRunOnceBoundsBatchAndStopsAtConfirmedHead(t *testing.T) {
 		t.Fatalf("query range = %s-%s", rpc.query.FromBlock, rpc.query.ToBlock)
 	}
 	if modelFake.saved.NextBlock != 600 {
+		t.Fatalf("next block = %d", modelFake.saved.NextBlock)
+	}
+}
+
+func TestRunOnceStartsAtConfirmedHeadWhenCheckpointMissing(t *testing.T) {
+	modelFake := &fakeLaunchModel{}
+	rpc := &fakeLogClient{latest: 1000}
+	logic := newIndexerLogic(indexerServiceContext(), modelFake, rpc)
+	if err := logic.RunOnce(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	if rpc.query.FromBlock.Uint64() != 998 || rpc.query.ToBlock.Uint64() != 998 {
+		t.Fatalf("query range = %s-%s", rpc.query.FromBlock, rpc.query.ToBlock)
+	}
+	if modelFake.saved.NextBlock != 999 {
 		t.Fatalf("next block = %d", modelFake.saved.NextBlock)
 	}
 }
