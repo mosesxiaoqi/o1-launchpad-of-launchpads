@@ -62,6 +62,21 @@ contract LaunchHookV2FeesTest is Test {
         assertEq(hook.currentTotalFeeBps(POOL_ID, LAUNCH_TIME + 100), 150);
     }
 
+    function testPreviewSplitConservesAtAntiSnipeBoundaries() public view {
+        uint256[4] memory timestamps = [
+            uint256(LAUNCH_TIME), uint256(LAUNCH_TIME + 8), uint256(LAUNCH_TIME + 16), uint256(LAUNCH_TIME + 17)
+        ];
+        uint256[4] memory expectedTotals = [uint256(9900), uint256(5025), uint256(150), uint256(150)];
+
+        for (uint256 i; i < timestamps.length; ++i) {
+            LaunchHookV2.FeeSplit memory split =
+                hook.previewFeeSplit(POOL_ID, 10_000, trader, referrer, timestamps[i]);
+
+            assertEq(split.total, expectedTotals[i]);
+            assertEq(split.creator + split.protocol + split.referrer + split.laas + split.surcharge, split.total);
+        }
+    }
+
     function testMagnitudeHandlesSignedInt128Boundaries() public view {
         assertEq(hook.magnitudeForTest(type(int128).min), uint256(1) << 127);
         assertEq(hook.magnitudeForTest(type(int128).max), uint256(uint128(type(int128).max)));

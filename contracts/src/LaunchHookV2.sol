@@ -186,8 +186,12 @@ contract LaunchHookV2 is BaseHook {
     }
 
     function currentTotalFeeBps(bytes32 poolId, uint256 timestamp) public view returns (uint256) {
-        PoolConfig storage config = poolConfig[poolId];
+        PoolConfig memory config = poolConfig[poolId];
         if (!config.initialized) revert UnknownPool();
+        return _currentTotalFeeBps(config, timestamp);
+    }
+
+    function _currentTotalFeeBps(PoolConfig memory config, uint256 timestamp) private pure returns (uint256) {
         if (timestamp <= config.launchTime) return config.antiSnipeStartTotalBps;
 
         uint256 elapsed = timestamp - config.launchTime;
@@ -204,16 +208,15 @@ contract LaunchHookV2 is BaseHook {
         view
         returns (FeeSplit memory split)
     {
-        PoolConfig storage config = poolConfig[poolId];
+        PoolConfig memory config = poolConfig[poolId];
         if (!config.initialized) revert UnknownPool();
 
         uint256 protocolFee = amount * config.protocolFeeBps / BPS;
         split.laas = amount * config.laasFeeBps / BPS;
-        split.total = amount * currentTotalFeeBps(poolId, timestamp) / BPS;
+        split.total = amount * _currentTotalFeeBps(config, timestamp) / BPS;
         split.creator = protocolFee * config.creatorBps / BPS;
 
-        bool validReferrer = referrer != address(0) && referrer != trader && referrer != config.creator
-            && referrer != config.protocolTreasury && referrer != config.laasTreasury;
+        bool validReferrer = _isValidReferrer(config, trader, referrer);
         split.referrer = validReferrer ? protocolFee * config.referrerBps / BPS : 0;
         split.protocol = protocolFee - split.creator - split.referrer;
         split.surcharge = split.total - protocolFee - split.laas;
@@ -266,7 +269,7 @@ contract LaunchHookV2 is BaseHook {
         PoolConfig memory config = poolConfig[poolId];
         if (!config.initialized) return (IHooks.beforeSwap.selector, BeforeSwapDeltaLibrary.ZERO_DELTA, 0);
 
-        uint256 totalFeeBps = currentTotalFeeBps(poolId, block.timestamp);
+        uint256 totalFeeBps = _currentTotalFeeBps(config, block.timestamp);
         if (params.amountSpecified > 0 && totalFeeBps > NORMAL_TOTAL_FEE_BPS) {
             revert ExactOutputDisabledDuringAntiSnipe();
         }
@@ -293,7 +296,7 @@ contract LaunchHookV2 is BaseHook {
         PoolConfig memory config = poolConfig[poolId];
         if (!config.initialized) return (IHooks.afterSwap.selector, int128(0));
 
-        uint256 totalFeeBps = currentTotalFeeBps(poolId, block.timestamp);
+        uint256 totalFeeBps = _currentTotalFeeBps(config, block.timestamp);
         if (params.amountSpecified > 0 && totalFeeBps > NORMAL_TOTAL_FEE_BPS) {
             revert ExactOutputDisabledDuringAntiSnipe();
         }
@@ -348,8 +351,7 @@ contract LaunchHookV2 is BaseHook {
 
         uint256 creatorShare = protocolFee * config.creatorBps / BPS;
         (address referrer, bytes32 comment) = _parseHookData(hookData);
-        bool validReferrer = referrer != address(0) && referrer != sender && referrer != config.creator
-            && referrer != config.protocolTreasury && referrer != config.laasTreasury;
+        bool validReferrer = _isValidReferrer(config, sender, referrer);
         uint256 referrerShare = validReferrer ? protocolFee * config.referrerBps / BPS : 0;
         uint256 protocolShare = totalFee - creatorShare - referrerShare - laasFee;
         address currency = Currency.unwrap(feeCurrency);
@@ -360,6 +362,15 @@ contract LaunchHookV2 is BaseHook {
         if (referrerShare != 0) escrow.credit(referrer, currency, referrerShare);
         if (laasFee != 0) escrow.credit(config.laasTreasury, currency, laasFee);
         emit Trade(poolId, sender, validReferrer ? referrer : address(0), currency, totalFee, comment);
+    }
+
+    function _isValidReferrer(PoolConfig memory config, address trader, address referrer)
+        private
+        pure
+        returns (bool)
+    {
+        return referrer != address(0) && referrer != trader && referrer != config.creator
+            && referrer != config.protocolTreasury && referrer != config.laasTreasury;
     }
 
     function _feeAmount(uint256 magnitude, uint256 feeBps, bool exactOutput) private pure returns (uint256) {
