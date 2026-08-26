@@ -18,7 +18,7 @@ export function ConnectWallet() {
   if (!isConnected) {
     const connector = connectors[0]
     return (
-      <button disabled={!connector || isConnecting} onClick={() => connector && connect({ connector })}>
+      <button disabled={!connector || isConnecting} onClick={() => connector && connect({ connector, chainId: chain.id })}>
         {isConnecting ? '连接中…' : '连接钱包'}
       </button>
     )
