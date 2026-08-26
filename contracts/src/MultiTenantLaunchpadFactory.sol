@@ -72,7 +72,8 @@ contract MultiTenantLaunchpadFactory is ReentrancyGuard {
     ) {
         if (
             address(registry_) == address(0) || address(poolManager_) == address(0) || address(hook_) == address(0)
-                || laasTreasury_ == address(0) || tickSpacing_ <= 0 || tickSpacing_ > 16_384
+                || laasTreasury_ == address(0) || startTickToken0Frame_ == type(int24).min || tickSpacing_ <= 0
+                || tickSpacing_ > 16_384
         ) revert InvalidConfig();
         registry = registry_;
         poolManager = poolManager_;

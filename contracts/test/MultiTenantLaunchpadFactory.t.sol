@@ -60,6 +60,13 @@ contract MultiTenantLaunchpadFactoryTest is Deployers {
         factory.launch(params);
     }
 
+    function testRejectsMinimumStartTickFrame() public {
+        vm.expectRevert(MultiTenantLaunchpadFactory.InvalidConfig.selector);
+        new MultiTenantLaunchpadFactory(
+            registry, manager, hook, Currency.unwrap(currency1), laasTreasury, type(int24).min, 60
+        );
+    }
+
     function testRejectsStaleConfigAndExpiredDeadline() public {
         MultiTenantLaunchpadFactory.LaunchParams memory params = _params();
         params.expectedConfigVersion = 2;
