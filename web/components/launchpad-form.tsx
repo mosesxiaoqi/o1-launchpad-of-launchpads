@@ -71,7 +71,10 @@ export function LaunchpadForm() {
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    if (!address || !isConnected || chainId !== chain.id || !publicClient) return
+    if (!address || !isConnected || chainId !== chain.id || !publicClient) {
+      setError('钱包连接尚未就绪')
+      return
+    }
     const checked = validate(fields)
     if (!checked.slug || Object.keys(checked.errors).length) {
       setFieldErrors(checked.errors)
@@ -126,7 +129,9 @@ export function LaunchpadForm() {
     ? '请先连接钱包'
     : chainId !== chain.id
       ? '请切换到 Base Sepolia'
-      : ''
+      : !address || !publicClient
+        ? '钱包连接尚未就绪'
+        : ''
   const previewLogo = isHttpsUrl(fields.logoUrl) ? fields.logoUrl : ''
 
   return (

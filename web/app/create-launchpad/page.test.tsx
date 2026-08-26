@@ -9,6 +9,7 @@ const mocks = vi.hoisted(() => ({
     chainId: 84532,
     isConnected: true,
   },
+  publicClientReady: true,
   signMessageAsync: vi.fn(),
   writeContractAsync: vi.fn(),
   waitForTransactionReceipt: vi.fn(),
@@ -23,7 +24,9 @@ vi.mock('wagmi', () => ({
   useAccount: () => mocks.account,
   useSignMessage: () => ({ signMessageAsync: mocks.signMessageAsync }),
   useWriteContract: () => ({ writeContractAsync: mocks.writeContractAsync }),
-  usePublicClient: () => ({ waitForTransactionReceipt: mocks.waitForTransactionReceipt }),
+  usePublicClient: () => mocks.publicClientReady
+    ? { waitForTransactionReceipt: mocks.waitForTransactionReceipt }
+    : undefined,
 }))
 
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push: mocks.push }) }))
@@ -50,6 +53,7 @@ describe('create launchpad page', () => {
     mocks.account.address = '0x1111111111111111111111111111111111111111'
     mocks.account.chainId = 84532
     mocks.account.isConnected = true
+    mocks.publicClientReady = true
     vi.clearAllMocks()
     mocks.config.mockResolvedValue({
       chain_id: 84532,
@@ -75,6 +79,13 @@ describe('create launchpad page', () => {
     render(<Page />)
     expect(screen.getByRole('button', { name: '创建 Launchpad' })).toBeDisabled()
     expect(screen.getByText('请切换到 Base Sepolia')).toBeInTheDocument()
+  })
+
+  it('disables creation while the wallet client is not ready', () => {
+    mocks.publicClientReady = false
+    render(<Page />)
+    expect(screen.getByRole('button', { name: '创建 Launchpad' })).toBeDisabled()
+    expect(screen.getByText('钱包连接尚未就绪')).toBeInTheDocument()
   })
 
   it('shows validation errors and focuses the first invalid field', async () => {
