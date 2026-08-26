@@ -172,7 +172,7 @@ contract LaunchHookV2 is BaseHook {
             int128 quoteDelta = tokenIsCurrency0 ? delta.amount1() : delta.amount0();
             int128 tokenDelta = tokenIsCurrency0 ? delta.amount0() : delta.amount1();
             if (quoteDelta != 0 || tokenDelta >= 0) revert NotSingleSided();
-            tokenOwed += uint256(uint128(-tokenDelta));
+            tokenOwed += _magnitude(tokenDelta);
         }
 
         if (Currency.unwrap(tokenCurrency) == address(0)) {
@@ -385,6 +385,11 @@ contract LaunchHookV2 is BaseHook {
         return uint256(amountSpecified);
     }
 
+    function _magnitude(int128 amount) internal pure returns (uint256) {
+        if (amount < 0) return uint256(uint128(-(amount + 1))) + 1;
+        return uint256(uint128(amount));
+    }
+
     function _requireFullSpecifiedFill(SwapParams calldata params, BalanceDelta delta, uint256 specifiedFee)
         private
         pure
@@ -412,7 +417,7 @@ contract LaunchHookV2 is BaseHook {
             currency = key.currency0;
             amount = delta.amount0();
         }
-        magnitude = amount < 0 ? uint256(uint128(-amount)) : uint256(uint128(amount));
+        magnitude = _magnitude(amount);
     }
 
     function _parseHookData(bytes calldata hookData) private pure returns (address referrer, bytes32 comment) {

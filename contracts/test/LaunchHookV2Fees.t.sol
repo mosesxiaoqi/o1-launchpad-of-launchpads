@@ -12,6 +12,10 @@ contract LaunchHookV2Harness is LaunchHookV2 {
     function registerForTest(bytes32 poolId, PoolConfig calldata config) external {
         _registerPoolConfig(poolId, config);
     }
+
+    function magnitudeForTest(int128 amount) external pure returns (uint256) {
+        return _magnitude(amount);
+    }
 }
 
 contract LaunchHookV2FeesTest is Test {
@@ -56,6 +60,13 @@ contract LaunchHookV2FeesTest is Test {
         assertEq(hook.currentTotalFeeBps(POOL_ID, LAUNCH_TIME + 8), 5025);
         assertEq(hook.currentTotalFeeBps(POOL_ID, LAUNCH_TIME + 16), 150);
         assertEq(hook.currentTotalFeeBps(POOL_ID, LAUNCH_TIME + 100), 150);
+    }
+
+    function testMagnitudeHandlesSignedInt128Boundaries() public view {
+        assertEq(hook.magnitudeForTest(type(int128).min), uint256(1) << 127);
+        assertEq(hook.magnitudeForTest(type(int128).max), uint256(uint128(type(int128).max)));
+        assertEq(hook.magnitudeForTest(-1), 1);
+        assertEq(hook.magnitudeForTest(0), 0);
     }
 
     function testRejectsNonCanonicalProtocolSplit() public {
