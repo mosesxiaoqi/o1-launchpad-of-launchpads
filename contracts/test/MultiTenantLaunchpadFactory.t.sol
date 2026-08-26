@@ -3,9 +3,11 @@ pragma solidity 0.8.26;
 
 import {Deployers} from "v4-core/test/utils/Deployers.sol";
 import {IHooks} from "v4-core/src/interfaces/IHooks.sol";
-import {PoolId} from "v4-core/src/types/PoolId.sol";
+import {PoolId, PoolIdLibrary} from "v4-core/src/types/PoolId.sol";
+import {PoolKey} from "v4-core/src/types/PoolKey.sol";
 import {Currency} from "v4-core/src/types/Currency.sol";
 import {Vm} from "forge-std/Vm.sol";
+import {Create2} from "@openzeppelin/contracts/utils/Create2.sol";
 
 import {FeeEscrow} from "../src/FeeEscrow.sol";
 import {LaunchHookV2} from "../src/LaunchHookV2.sol";
@@ -14,6 +16,8 @@ import {LaunchToken} from "../src/LaunchToken.sol";
 import {MultiTenantLaunchpadFactory} from "../src/MultiTenantLaunchpadFactory.sol";
 
 contract MultiTenantLaunchpadFactoryTest is Deployers {
+    using PoolIdLibrary for PoolKey;
+
     LaunchpadRegistry internal registry;
     LaunchHookV2 internal hook;
     FeeEscrow internal escrow;
@@ -166,6 +170,42 @@ contract MultiTenantLaunchpadFactoryTest is Deployers {
         factory.launch(params);
     }
 
+    function testCreate2PredictionAndBothCurrencyOrderings() public {
+        MultiTenantLaunchpadFactory.LaunchParams memory token0Params = _paramsForOrdering(true, "Token Zero", "ZERO");
+        address predictedToken0 = _predictedToken(token0Params, creator);
+        vm.prank(creator);
+        (address token0, bytes32 pool0) = factory.launch(token0Params);
+
+        assertEq(token0, predictedToken0);
+        assertLt(uint160(token0), uint160(Currency.unwrap(currency1)));
+        assertEq(pool0, _expectedPoolId(token0, true));
+
+        MultiTenantLaunchpadFactory.LaunchParams memory token1Params = _paramsForOrdering(false, "Token One", "ONE");
+        address predictedToken1 = _predictedToken(token1Params, creator);
+        vm.prank(creator);
+        (address token1, bytes32 pool1) = factory.launch(token1Params);
+
+        assertEq(token1, predictedToken1);
+        assertGt(uint160(token1), uint160(Currency.unwrap(currency1)));
+        assertEq(pool1, _expectedPoolId(token1, false));
+    }
+
+    function testCreate2SaltIsBoundToCaller() public {
+        MultiTenantLaunchpadFactory.LaunchParams memory params = _params();
+        address anotherCreator = makeAddr("anotherCreator");
+        address creatorPrediction = _predictedToken(params, creator);
+        address anotherPrediction = _predictedToken(params, anotherCreator);
+        assertNotEq(creatorPrediction, anotherPrediction);
+
+        vm.prank(creator);
+        (address creatorToken,) = factory.launch(params);
+        vm.prank(anotherCreator);
+        (address anotherToken,) = factory.launch(params);
+
+        assertEq(creatorToken, creatorPrediction);
+        assertEq(anotherToken, anotherPrediction);
+    }
+
     function _params() internal view returns (MultiTenantLaunchpadFactory.LaunchParams memory) {
         return MultiTenantLaunchpadFactory.LaunchParams({
             launchpadId: launchpadId,
@@ -177,5 +217,49 @@ contract MultiTenantLaunchpadFactoryTest is Deployers {
             expectedConfigVersion: 1,
             deadline: uint64(block.timestamp + 1 hours)
         });
+    }
+
+    function _paramsForOrdering(bool tokenIsCurrency0, string memory name, string memory symbol)
+        internal
+        view
+        returns (MultiTenantLaunchpadFactory.LaunchParams memory params)
+    {
+        params = _params();
+        params.name = name;
+        params.symbol = symbol;
+        params.contractURI = string.concat("ipfs://", symbol);
+
+        for (uint256 i; i < 512; ++i) {
+            params.salt = bytes32(i);
+            bool predictedIsCurrency0 = uint160(_predictedToken(params, creator)) < uint160(params.quote);
+            if (predictedIsCurrency0 == tokenIsCurrency0) return params;
+        }
+        revert("ordering salt not found");
+    }
+
+    function _predictedToken(MultiTenantLaunchpadFactory.LaunchParams memory params, address caller)
+        internal
+        view
+        returns (address)
+    {
+        bytes32 derivedSalt = keccak256(abi.encode(caller, params.salt));
+        bytes memory initCode = abi.encodePacked(
+            type(LaunchToken).creationCode,
+            abi.encode(params.name, params.symbol, params.contractURI, factory.LAUNCH_SUPPLY(), address(hook))
+        );
+        return Create2.computeAddress(derivedSalt, keccak256(initCode), address(factory));
+    }
+
+    function _expectedPoolId(address token, bool tokenIsCurrency0) internal view returns (bytes32) {
+        (Currency currency0_, Currency currency1_) =
+            tokenIsCurrency0 ? (Currency.wrap(token), currency1) : (currency1, Currency.wrap(token));
+        PoolKey memory key = PoolKey({
+            currency0: currency0_,
+            currency1: currency1_,
+            fee: 0,
+            tickSpacing: factory.tickSpacing(),
+            hooks: IHooks(address(hook))
+        });
+        return PoolId.unwrap(key.toId());
     }
 }

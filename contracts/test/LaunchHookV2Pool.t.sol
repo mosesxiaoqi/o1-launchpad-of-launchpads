@@ -6,6 +6,7 @@ import {IHooks} from "v4-core/src/interfaces/IHooks.sol";
 import {IPoolManager} from "v4-core/src/interfaces/IPoolManager.sol";
 import {PoolKey} from "v4-core/src/types/PoolKey.sol";
 import {Currency} from "v4-core/src/types/Currency.sol";
+import {toBalanceDelta} from "v4-core/src/types/BalanceDelta.sol";
 import {ModifyLiquidityParams} from "v4-core/src/types/PoolOperation.sol";
 import {SwapParams} from "v4-core/src/types/PoolOperation.sol";
 
@@ -41,6 +42,16 @@ contract HookPoolManagerCaller {
             msg.sender,
             key,
             SwapParams({zeroForOne: false, amountSpecified: 1, sqrtPriceLimitX96: type(uint160).max - 1}),
+            ""
+        );
+    }
+
+    function afterPartialExactInputSwap(IHooks hook, PoolKey calldata key) external {
+        hook.afterSwap(
+            msg.sender,
+            key,
+            SwapParams({zeroForOne: false, amountSpecified: -1000, sqrtPriceLimitX96: type(uint160).max - 1}),
+            toBalanceDelta(0, -984),
             ""
         );
     }
@@ -128,6 +139,16 @@ contract LaunchHookV2PoolTest is Test {
 
         vm.warp(block.timestamp + 16);
         manager.beforeExactOutputSwap(IHooks(address(hook)), key);
+    }
+
+    function testRejectsPartialSpecifiedFill() public {
+        hook.setFactoryOnce(factory, address(escrow));
+        vm.prank(factory);
+        hook.registerPool(key, _defaultConfig());
+        vm.warp(block.timestamp + 16);
+
+        vm.expectRevert(LaunchHookV2.PartialFillUnsupported.selector);
+        manager.afterPartialExactInputSwap(IHooks(address(hook)), key);
     }
 
     function _defaultConfig() internal view returns (LaunchHookV2.PoolConfig memory) {

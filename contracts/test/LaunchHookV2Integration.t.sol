@@ -99,6 +99,17 @@ contract LaunchHookV2IntegrationTest is Deployers {
         assertEq(manager.balanceOf(address(escrow), uint160(quote)), escrow.totalOwed(quote));
     }
 
+    function testExactOutputAfterAntiSnipeChargesQuoteOutput() public {
+        _seed();
+        vm.warp(block.timestamp + 16);
+
+        swap(launchKey, false, 1000, "");
+
+        address quote = Currency.unwrap(currency1);
+        assertGt(escrow.totalOwed(quote), 0);
+        assertEq(manager.balanceOf(address(escrow), uint160(quote)), escrow.totalOwed(quote));
+    }
+
     function _seed() internal {
         LaunchHookV2.SeedPosition[] memory positions = new LaunchHookV2.SeedPosition[](1);
         positions[0] = LaunchHookV2.SeedPosition({tickLower: 60, tickUpper: 120, liquidity: 1e18});

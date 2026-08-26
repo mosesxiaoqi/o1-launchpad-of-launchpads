@@ -189,8 +189,39 @@ contract FeeEscrowTest is Test {
         assertEq(currency.balanceOf(recipient) + escrow.totalOwed(address(currency)), amount);
     }
 
+    function testMultiRecipientCreditAndClaimSequencePreservesAccounting() public {
+        address secondRecipient = makeAddr("secondRecipient");
+        _fundClaim(currency, 30 ether);
+
+        vm.startPrank(hook);
+        escrow.credit(recipient, address(currency), 10 ether);
+        _assertAccounting(secondRecipient, 10 ether, 30 ether);
+        escrow.credit(secondRecipient, address(currency), 8 ether);
+        _assertAccounting(secondRecipient, 18 ether, 30 ether);
+        vm.stopPrank();
+
+        escrow.claim(recipient, address(currency));
+        _assertAccounting(secondRecipient, 8 ether, 20 ether);
+
+        vm.prank(hook);
+        escrow.credit(secondRecipient, address(currency), 5 ether);
+        _assertAccounting(secondRecipient, 13 ether, 20 ether);
+
+        escrow.claim(secondRecipient, address(currency));
+        _assertAccounting(secondRecipient, 0, 7 ether);
+        assertEq(currency.balanceOf(recipient) + currency.balanceOf(secondRecipient), 23 ether);
+    }
+
     function _fundClaim(MockCurrency token, uint256 amount) internal {
         token.mint(address(manager), amount);
         manager.mintClaim(address(escrow), address(token), amount);
+    }
+
+    function _assertAccounting(address secondRecipient, uint256 expectedOwed, uint256 expectedBalance) internal view {
+        uint256 total = escrow.owed(recipient, address(currency)) + escrow.owed(secondRecipient, address(currency));
+        assertEq(total, escrow.totalOwed(address(currency)));
+        assertEq(total, expectedOwed);
+        assertEq(manager.balanceOf(address(escrow), uint160(address(currency))), expectedBalance);
+        assertLe(total, expectedBalance);
     }
 }

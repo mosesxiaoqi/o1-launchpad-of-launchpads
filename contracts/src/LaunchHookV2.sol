@@ -364,11 +364,7 @@ contract LaunchHookV2 is BaseHook {
         emit Trade(poolId, sender, validReferrer ? referrer : address(0), currency, totalFee, comment);
     }
 
-    function _isValidReferrer(PoolConfig memory config, address trader, address referrer)
-        private
-        pure
-        returns (bool)
-    {
+    function _isValidReferrer(PoolConfig memory config, address trader, address referrer) private pure returns (bool) {
         return referrer != address(0) && referrer != trader && referrer != config.creator
             && referrer != config.protocolTreasury && referrer != config.laasTreasury;
     }
@@ -431,7 +427,7 @@ contract LaunchHookV2 is BaseHook {
         magnitude = _magnitude(amount);
     }
 
-    function _parseHookData(bytes calldata hookData) private pure returns (address referrer, bytes32 comment) {
+    function _parseHookData(bytes calldata hookData) internal pure returns (address referrer, bytes32 comment) {
         if (hookData.length >= 32) referrer = address(uint160(uint256(bytes32(hookData[:32]))));
         if (hookData.length >= 64) comment = bytes32(hookData[32:64]);
     }

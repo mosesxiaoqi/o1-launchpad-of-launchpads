@@ -16,6 +16,10 @@ contract LaunchHookV2Harness is LaunchHookV2 {
     function magnitudeForTest(int128 amount) external pure returns (uint256) {
         return _magnitude(amount);
     }
+
+    function parseHookDataForTest(bytes calldata hookData) external pure returns (address referrer, bytes32 comment) {
+        return _parseHookData(hookData);
+    }
 }
 
 contract LaunchHookV2FeesTest is Test {
@@ -63,14 +67,12 @@ contract LaunchHookV2FeesTest is Test {
     }
 
     function testPreviewSplitConservesAtAntiSnipeBoundaries() public view {
-        uint256[4] memory timestamps = [
-            uint256(LAUNCH_TIME), uint256(LAUNCH_TIME + 8), uint256(LAUNCH_TIME + 16), uint256(LAUNCH_TIME + 17)
-        ];
+        uint256[4] memory timestamps =
+            [uint256(LAUNCH_TIME), uint256(LAUNCH_TIME + 8), uint256(LAUNCH_TIME + 16), uint256(LAUNCH_TIME + 17)];
         uint256[4] memory expectedTotals = [uint256(9900), uint256(5025), uint256(150), uint256(150)];
 
         for (uint256 i; i < timestamps.length; ++i) {
-            LaunchHookV2.FeeSplit memory split =
-                hook.previewFeeSplit(POOL_ID, 10_000, trader, referrer, timestamps[i]);
+            LaunchHookV2.FeeSplit memory split = hook.previewFeeSplit(POOL_ID, 10_000, trader, referrer, timestamps[i]);
 
             assertEq(split.total, expectedTotals[i]);
             assertEq(split.creator + split.protocol + split.referrer + split.laas + split.surcharge, split.total);
@@ -82,6 +84,36 @@ contract LaunchHookV2FeesTest is Test {
         assertEq(hook.magnitudeForTest(type(int128).max), uint256(uint128(type(int128).max)));
         assertEq(hook.magnitudeForTest(-1), 1);
         assertEq(hook.magnitudeForTest(0), 0);
+    }
+
+    function testParsesHookDataOnlyAtCompleteWordBoundaries() public view {
+        bytes32 comment = keccak256("comment");
+        bytes memory referrerWord = abi.encode(referrer);
+        bytes memory complete = abi.encode(referrer, comment);
+
+        (address parsedReferrer, bytes32 parsedComment) = hook.parseHookDataForTest("");
+        assertEq(parsedReferrer, address(0));
+        assertEq(parsedComment, bytes32(0));
+
+        (parsedReferrer, parsedComment) = hook.parseHookDataForTest(new bytes(31));
+        assertEq(parsedReferrer, address(0));
+        assertEq(parsedComment, bytes32(0));
+
+        (parsedReferrer, parsedComment) = hook.parseHookDataForTest(referrerWord);
+        assertEq(parsedReferrer, referrer);
+        assertEq(parsedComment, bytes32(0));
+
+        (parsedReferrer, parsedComment) = hook.parseHookDataForTest(bytes.concat(referrerWord, new bytes(31)));
+        assertEq(parsedReferrer, referrer);
+        assertEq(parsedComment, bytes32(0));
+
+        (parsedReferrer, parsedComment) = hook.parseHookDataForTest(complete);
+        assertEq(parsedReferrer, referrer);
+        assertEq(parsedComment, comment);
+
+        (parsedReferrer, parsedComment) = hook.parseHookDataForTest(bytes.concat(complete, hex"ff"));
+        assertEq(parsedReferrer, referrer);
+        assertEq(parsedComment, comment);
     }
 
     function testRejectsNonCanonicalProtocolSplit() public {
