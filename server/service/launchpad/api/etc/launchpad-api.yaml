@@ -1,7 +1,7 @@
 Name: launchpad-api
-Host: 0.0.0.0
+Host: 127.0.0.1
 Port: 8888
-Mode: dev
+Mode: ${SERVICE_MODE}
 LaunchpadRpc:
   Endpoints:
     - 127.0.0.1:8080

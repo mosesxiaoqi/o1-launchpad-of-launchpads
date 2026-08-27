@@ -110,6 +110,34 @@ npm run build
 npm run start
 ```
 
+### Quick Tunnel 公网测试
+
+Quick Tunnel 只公开 Next.js；`/v1/*` 和 `/health/*` 由 Next.js 同源转发到仅监听本机的 REST Gateway。zRPC、Indexer 和 PostgreSQL 不应直接公开。
+
+复制并填写运行时环境，不要加入部署或 Smoke 钱包私钥：
+
+```bash
+cp tunnel.env.example tunnel.env
+```
+
+先在一个终端获取临时公网 URL：
+
+```bash
+cloudflared tunnel --url http://127.0.0.1:3000
+```
+
+再在另一个终端加载环境，把输出的 URL 设为唯一认证 Origin，然后启动项目：
+
+```bash
+set -a
+source tunnel.env
+set +a
+export FRONTEND_ORIGIN=https://generated-name.trycloudflare.com
+make dev
+```
+
+`NEXT_PUBLIC_API_URL` 在 `tunnel.env` 中保持为空，使浏览器通过当前公网 Origin 请求 `/v1`。Quick Tunnel 或本机进程停止后公网访问立即失效；URL 变化时只需更新 `FRONTEND_ORIGIN` 并重启服务。
+
 ## 5. 真实 Base Sepolia Smoke
 
 当前自动 Swap 路径要求部署清单的 Quote 为原生 ETH 零地址。ERC-20 Quote 还需要补 Permit2 授权 UI，Smoke 会在广播前拒绝该配置。Smoke 必须访问启用 HTTPS 的 API；认证 Cookie 带 `Secure`，不能通过明文 `http://127.0.0.1:8888` 完成真实链流程。

@@ -34,12 +34,16 @@ func TestLoadExpandsIndexerEnvironment(t *testing.T) {
 	t.Setenv("DATABASE_URL", "postgres://indexer-db")
 	t.Setenv("BASE_SEPOLIA_RPC_URL", "https://base-sepolia.example")
 	t.Setenv("BASE_SEPOLIA_WS_URL", "wss://base-sepolia.example")
+	t.Setenv("SERVICE_MODE", "pro")
 	var cfg Config
 	if err := conf.Load("../../etc/indexer.yaml", &cfg, conf.UseEnv()); err != nil {
 		t.Fatal(err)
 	}
 	if cfg.Database.DataSource != "postgres://indexer-db" || cfg.Indexer.BatchSize != 10 {
 		t.Fatalf("unexpected loaded config: %#v", cfg)
+	}
+	if cfg.Mode != "pro" {
+		t.Fatalf("indexer mode = %q", cfg.Mode)
 	}
 }
 

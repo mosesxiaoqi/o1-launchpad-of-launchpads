@@ -1,6 +1,6 @@
 Name: launchpad-rpc
-ListenOn: 0.0.0.0:8080
-Mode: dev
+ListenOn: 127.0.0.1:8080
+Mode: ${SERVICE_MODE}
 # Runtime secrets and RPC endpoints are injected from the repository-root .env.
 Database:
   DataSource: ${DATABASE_URL}

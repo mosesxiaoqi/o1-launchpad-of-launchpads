@@ -24,6 +24,7 @@ func TestValidateRejectsMissingRPCOrSessionSecret(t *testing.T) {
 func TestLoadExpandsSessionSecret(t *testing.T) {
 	t.Setenv("SESSION_SECRET", "test-session-secret")
 	t.Setenv("FRONTEND_ORIGIN", "http://localhost:3000")
+	t.Setenv("SERVICE_MODE", "pro")
 	var cfg Config
 	if err := conf.Load("../../etc/launchpad-api.yaml", &cfg, conf.UseEnv()); err != nil {
 		t.Fatal(err)
@@ -33,6 +34,9 @@ func TestLoadExpandsSessionSecret(t *testing.T) {
 	}
 	if cfg.Auth.AllowedOrigin != "http://localhost:3000" {
 		t.Fatalf("AllowedOrigin = %q", cfg.Auth.AllowedOrigin)
+	}
+	if cfg.Host != "127.0.0.1" || cfg.Mode != "pro" {
+		t.Fatalf("gateway exposure config = host %q, mode %q", cfg.Host, cfg.Mode)
 	}
 }
 

@@ -1,5 +1,5 @@
 Name: launchpad-indexer
-Mode: dev
+Mode: ${SERVICE_MODE}
 # Runtime secrets and RPC endpoints are injected from the repository-root .env.
 Database:
   DataSource: ${DATABASE_URL}
