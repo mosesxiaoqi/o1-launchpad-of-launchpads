@@ -1,6 +1,9 @@
 import type { NextConfig } from 'next'
 
+const frontendOrigin = process.env.FRONTEND_ORIGIN
+
 const nextConfig: NextConfig = {
+  allowedDevOrigins: frontendOrigin ? [new URL(frontendOrigin).hostname] : [],
   turbopack: { root: process.cwd() },
   async rewrites() {
     return [

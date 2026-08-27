@@ -17,7 +17,10 @@ export class ApiError extends Error {
   }
 }
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? ''
+const apiUrl =
+  typeof window === 'undefined'
+    ? process.env.INTERNAL_API_URL ?? 'http://127.0.0.1:8888'
+    : process.env.NEXT_PUBLIC_API_URL ?? ''
 
 export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
   const headers = new Headers(init.headers)

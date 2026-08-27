@@ -11,16 +11,19 @@ export function useBaseSepoliaWriteReady() {
 
 export function ConnectWallet() {
   const { address, chainId, isConnected } = useAccount()
-  const { connectors, mutate: connect, isPending: isConnecting } = useConnect()
+  const { connectors, mutate: connect, isPending: isConnecting, error: connectError } = useConnect()
   const { mutate: disconnect } = useDisconnect()
   const { mutate: switchChain, isPending: isSwitching } = useSwitchChain()
 
   if (!isConnected) {
-    const connector = connectors[0]
+    const connector = connectors.find(({ id, name }) => id === 'io.metamask' || name.toLowerCase().includes('metamask')) ?? connectors[0]
     return (
-      <button disabled={!connector || isConnecting} onClick={() => connector && connect({ connector, chainId: chain.id })}>
-        {isConnecting ? '连接中…' : '连接钱包'}
-      </button>
+      <div>
+        <button disabled={!connector || isConnecting} onClick={() => connector && connect({ connector, chainId: chain.id })}>
+          {isConnecting ? '连接中…' : '连接钱包'}
+        </button>
+        {connectError && <p role="alert" className="form-error">{connectError.message}</p>}
+      </div>
     )
   }
 
